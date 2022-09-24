@@ -45,6 +45,21 @@ const TabsContainer = styled.div`
   padding: 2px;
 `;
 
+const Item = styled('div')(({ theme }) => ({
+    display: 'flex',
+    justifyContent: 'center',
+    padding: '5px 20px',
+    margin: '0px 20px',
+    textAlign: 'center',
+    fontSize: "20px",
+    // color: theme.palette.text.secondary,
+    color: 'white',
+    // border: "solid white 2px",
+    borderRadius: "1.25rem",
+    background: "#000000b8",
+    minWidth: '150px',
+    alignSelf: 'center',
+  }));
 
 function WealthMountain() {
     const [sliderValue, setSliderValue] = useState('50');
@@ -554,7 +569,7 @@ function WealthMountain() {
 
     return (
         <>
-            <Container className="custom-header">
+            <div className="custom-header">
                 {/* <Card className="px-5 py-2"> */}
                     <img
                         alt="..."
@@ -563,6 +578,56 @@ function WealthMountain() {
                         style={{ width: 'auto', height: '96px' }}
                     />
                 {/* </Card> */}
+                <Grid className="header_menu" item xs={12} sm={6.6}>
+                    <Item>
+                        <a href="https://www.encryptosecurity.com/AuditRecord?project=64" target="_blank"
+                        style={{
+                            textDecoration: 'none',
+                            fontWeight: "bolder",
+                            color:"#ffbb00"
+                        }}
+                        >
+                            <span>Audit </span>
+                            {/* <TwitterIcon/> */}
+                        </a>
+                    </Item>
+                    <Item>
+                        <a href="" target="_blank"
+                        style={{
+                            textDecoration: 'none',
+                            fontWeight: "bolder",
+                            color:"#ffbb00"
+                        }}
+                        >
+                            <span>Contract </span>
+                            {/* <SiBinance/> */}
+                        </a>
+                    </Item>
+                    <Item>
+                        <a href="/whitepaper.pdf" target="_blank"
+                        style={{
+                            textDecoration: 'none',
+                            fontWeight: "bolder",
+                            color:"#ffbb00"
+                        }}
+                        >
+                            <span>Whitepaper</span>
+                            {/* <FaDiscord/> */}
+                        </a>
+                    </Item>
+                    <Item style={{border: "solid #ffbb00 4px"}}>
+                        <a href="https://lottery.wcminer.com/" target="__blank"
+                        style={{
+                            textDecoration: 'none',
+                            fontWeight: "bolder",
+                            color:"#ffbb00"
+                        }}
+                        >
+                        <span>Lottery </span>
+                        {/* <TelegramIcon/> */}
+                        </a>
+                    </Item>
+                    </Grid>
                 
                 <Button
                     className='custom-button'
@@ -570,7 +635,7 @@ function WealthMountain() {
                     onClick={requestAccount}>
                     {connectButtonText}
                 </Button>
-            </Container>
+            </div>
             {/* <Container>
                 <Button
                     style={{background: 'transparent', border: 'none'}} 
@@ -1020,19 +1085,20 @@ function WealthMountain() {
                     </Card>
                 </Container>
                 }
-                <Container className="pt-5 text-center calvino text-lightblue">
-                    <Card body className="mb-3 p-1">
-                        <CardDeck className="custom-footer">
-                            <a href="https://wcminer.com/whitepaper.pdf" target="_blank" rel="noreferrer"> DOCS </a>
-                            <a href="https://twitter.com/WolfOfCrypto885" target="_blank" rel="noreferrer"> TWITTER </a>
-                            <a href="https://t.me/WCMinerOfficial" target="_blank" rel="noreferrer"> TELEGRAM </a>
-                            <a href="https://bscscan.com/address/0xae12362c87dab9cf6567f63c892dd80f38828d8f" target="_blank" rel="noreferrer"> CONTRACT </a>
-                            <a href="https://www.encryptosecurity.com/AuditRecord?project=64" target="_blank" rel="noreferrer"> AUDIT </a>
-                        </CardDeck>
-                    </Card>
-                    <p style={{fontSize: '14px'}}>© Wolf Crypto Team , All Rights Reserved</p>
-                </Container>
+                
             </Container>
+            <div className="pt-5 text-center calvino text-lightblue">
+                <Card style={{borderRadius: '0px', padding:'70px 10px 50px 10px'}}>
+                    <CardDeck className="custom-footer">
+                        <a href="https://wcminer.com/whitepaper.pdf" target="_blank" rel="noreferrer"> DOCS </a>
+                        <a href="https://twitter.com/WolfOfCrypto885" target="_blank" rel="noreferrer"> TWITTER </a>
+                        <a href="https://t.me/WCMinerOfficial" target="_blank" rel="noreferrer"> TELEGRAM </a>
+                        <a href="https://bscscan.com/address/0xae12362c87dab9cf6567f63c892dd80f38828d8f" target="_blank" rel="noreferrer"> CONTRACT </a>
+                        <a href="https://www.encryptosecurity.com/AuditRecord?project=64" target="_blank" rel="noreferrer"> AUDIT </a>
+                    </CardDeck>
+                    <p style={{fontSize: '20px', color:'white', paddingTop:'30px'}}>© Wolf Crypto Team , All Rights Reserved</p>
+                </Card>
+            </div>
         </>
 
     )

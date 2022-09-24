@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto');
 .App {
   text-align: center;
 }
@@ -95,7 +96,7 @@ hr.rounded {
   border-radius:10px;
 }
 .calvino {
-  font-family:Open Sans;
+  font-family:Roboto;
 }
 
 .libertine {
@@ -103,11 +104,11 @@ hr.rounded {
 }
 
 .source {
-  font-family:Open Sans;
+  font-family:Roboto;
 }
 
 .source-bold {
-  font-family:Open Sans Bold;
+  font-family:Roboto Bold;
 }
 .App-link {
   color: #61dafb;
@@ -198,7 +199,8 @@ article, aside, figcaption, figure, footer, header, hgroup, main, nav, section {
 
 body {
   margin: 0;
-  font-family: "Open Sans", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
@@ -4704,7 +4706,7 @@ a.close.disabled {
   z-index: 1070;
   display: block;
   margin: 0;
-  font-family: "Open Sans", sans-serif;
+  font-family: "Roboto", sans-serif;
   font-style: normal;
   font-weight: 400;
   line-height: 1.5;
@@ -4789,7 +4791,7 @@ a.close.disabled {
   z-index: 1060;
   display: block;
   max-width: 276px;
-  font-family: "Open Sans", sans-serif;
+  font-family: "Roboto", sans-serif;
   font-style: normal;
   font-weight: 400;
   line-height: 1.5;
@@ -13020,7 +13022,7 @@ textarea[resize="horizontal"] {
 
 .navbar-nav .nav-link {
   font-size: 0.9rem;
-  font-family: "Open Sans", sans-serif;
+  font-family: "Roboto", sans-serif;
   font-weight: 400;
   text-transform: normal;
   letter-spacing: 0;
@@ -17201,6 +17203,13 @@ td.rdtYear:hover {
   justify-content: center;
   padding-top: 2rem;
   gap: 1rem;
+  margin: 0px 50px;
+}
+
+.header_menu {
+  display: flex;
+  justify-content: space-evenly;
+  align-self: center;
 }
 
 @media (min-width: 576px) {
@@ -17245,13 +17254,15 @@ td.rdtYear:hover {
   margin: 0;
   padding-left: 1rem;
   padding-right: 1rem;
-  justify-content: space-between;
+  justify-content: space-evenly;
   color: white;
-  font-size: 12px;
+  font-size: 20px;
   font-weight: bold;
+  width: 70%;
+  align-self: center;
 }
 
-@media (min-width: 576px) {
+@media (max-width: 576px) {
   .custom-footer {
     margin: 0;
     padding-left: 5rem;
