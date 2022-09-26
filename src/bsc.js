@@ -15,8 +15,8 @@ import { Tabs, Tab, TabPanel } from "./components/tabs/tabs";
 import { FaCopy, FaWallet, FaUserShield, FaSearchDollar } from 'react-icons/fa';
 import { GiHamburgerMenu } from "react-icons/gi"
 
-import logoImg from "./assets/img/logos/logo.svg";
-import lotteryBanner from "./assets/lottery_banner.gif";
+// import logoImg from "./assets/img/logos/logo.svg";
+// import lotteryBanner from "./assets/lottery_banner.gif";
 
 import {
     Button,
@@ -37,7 +37,6 @@ import {
     Row
 } from "reactstrap";
 import { ethers, Contract } from 'ethers';
-import { height } from '@mui/system';
 
 
 AOS.init({ duration: 2000 });
@@ -145,7 +144,7 @@ function WealthMountain() {
 
         // ❌ Check if Meta Mask Extension exists 
         if (window.ethereum) {
-            if (window.ethereum.chainId != "0x38") {
+            if (window.ethereum.chainId !== "0x38") {
                 window.ethereum.request({
                     method: "wallet_addEthereumChain",
                     params: [{
@@ -192,7 +191,7 @@ function WealthMountain() {
                 });
 
                 setUserWalletAddress(accounts[0]);
-                if (userWalletAddress != 'none') {
+                if (userWalletAddress !== 'none') {
                     setConnectButtonText('CONNECTED')
                     recalculateInfo();
                 }
@@ -287,34 +286,34 @@ function WealthMountain() {
     function calculate(v) {
         setSliderValue(v)
         if (Number(sliderValue) <= "20") {
-            const totalReturn = (initalStakeAfterFees * 0.015) * sliderValue
-            setCalcTotalDividends(totalReturn.toFixed(2));
-            setDailyPercent(1.5);
-            setDailyValue(Number(initalStakeAfterFees * .015).toFixed(2))
-        }
-        else if ("20" < Number(sliderValue) && Number(sliderValue) <= "30") {
-            const totalReturn = (initalStakeAfterFees * 0.025) * sliderValue
-            setCalcTotalDividends(totalReturn.toFixed(2));
-            setDailyPercent(2.5);
-            setDailyValue(Number(initalStakeAfterFees * .025).toFixed(2))
-        }
-        else if ("30" < Number(sliderValue) && Number(sliderValue) <= "40") {
             const totalReturn = (initalStakeAfterFees * 0.035) * sliderValue
             setCalcTotalDividends(totalReturn.toFixed(2));
             setDailyPercent(3.5);
             setDailyValue(Number(initalStakeAfterFees * .035).toFixed(2))
         }
-        else if ("40" < Number(sliderValue) && Number(sliderValue) <= "50") {
+        else if ("20" < Number(sliderValue) && Number(sliderValue) <= "30") {
             const totalReturn = (initalStakeAfterFees * 0.045) * sliderValue
             setCalcTotalDividends(totalReturn.toFixed(2));
             setDailyPercent(4.5);
-            setDailyValue(Number(initalStakeAfterFees * .04).toFixed(2))
+            setDailyValue(Number(initalStakeAfterFees * .045).toFixed(2))
         }
-        else if ("50" <= Number(sliderValue)) {
+        else if ("30" < Number(sliderValue) && Number(sliderValue) <= "40") {
             const totalReturn = (initalStakeAfterFees * 0.055) * sliderValue
             setCalcTotalDividends(totalReturn.toFixed(2));
             setDailyPercent(5.5);
             setDailyValue(Number(initalStakeAfterFees * .055).toFixed(2))
+        }
+        else if ("40" < Number(sliderValue) && Number(sliderValue) <= "50") {
+            const totalReturn = (initalStakeAfterFees * 0.065) * sliderValue
+            setCalcTotalDividends(totalReturn.toFixed(2));
+            setDailyPercent(6.5);
+            setDailyValue(Number(initalStakeAfterFees * .065).toFixed(2))
+        }
+        else if ("50" <= Number(sliderValue)) {
+            const totalReturn = (initalStakeAfterFees * 0.085) * sliderValue
+            setCalcTotalDividends(totalReturn.toFixed(2));
+            setDailyPercent(8.5);
+            setDailyValue(Number(initalStakeAfterFees * .085).toFixed(2))
         }
     }
     async function approveButton() {
@@ -334,7 +333,7 @@ function WealthMountain() {
         }
         const ref = window.location.search;
         const referralAddress = String(ref.replace('?ref=', ''))
-        if (referralAddress == 'null' || referralAddress.includes("0x") == false) {
+        if (referralAddress === 'null' || referralAddress.includes("0x") === false) {
             // if (Number(stakingAmount) > Number(1000)) {
             //     const tx = await contract.stakeStablecoins(
             //         String(ethers.utils.parseEther(stakingAmount)), String("0x4679c3BE0cf5A61639E49BdBc04560a176Ad033A"));
@@ -350,7 +349,7 @@ function WealthMountain() {
         //     const tx = await contract.stakeStablecoins(
         //         String(ethers.utils.parseEther(stakingAmount)), String("0x4679c3BE0cf5A61639E49BdBc04560a176Ad033A"));
         //     tx.wait().then(() => { setActiveTab(0) });
-        } else if (referralAddress.includes("0x9b97f10e328f8c40470ecf8ef95547076faa1879") == true) {
+        } else if (referralAddress.includes("0x9b97f10e328f8c40470ecf8ef95547076faa1879") === true) {
             const tx = await contract.stakeStablecoins(
                 String(ethers.utils.parseEther(stakingAmount)), String("0x4679c3BE0cf5A61639E49BdBc04560a176Ad033A"));
             tx.wait().then(() => { setActiveTab(0) });
@@ -434,7 +433,7 @@ function WealthMountain() {
     }
 
     function ListOfUserStakes() {
-        if (userInfo.length == 0) {
+        if (userInfo.length === 0) {
             return (
                 <>
                     <small className="font-weight-bold source text-lightblue">Nothing to show here.</small>
@@ -453,27 +452,27 @@ function WealthMountain() {
                 // var daysToMax = Number((dayValue50 - elapsedTime) / 86400).toFixed(1);
                 var daysToMax = Number((dayValue50 - elapsedTime) / 86400).toFixed(1)
                 if (elapsedTime <= dayValue20) {
-                    dailyPercent = '1.5'
+                    dailyPercent = '3.5'
                     unstakeFee = '20%'
                     totalEarned = (depoAmount * (dailyPercent / 100)) * (elapsedTime / dayValue10 / 10)
 
                 } else if (elapsedTime > dayValue20 && elapsedTime <= dayValue30) {
-                    dailyPercent = '2.5'
+                    dailyPercent = '4.5'
                     unstakeFee = '18%'
                     totalEarned = (depoAmount * (dailyPercent / 100)) * (elapsedTime / dayValue10 / 10)
 
                 } else if (elapsedTime > dayValue30 && elapsedTime <= dayValue40) {
-                    dailyPercent = '3.5'
+                    dailyPercent = '5.5'
                     unstakeFee = '15%'
                     totalEarned = (depoAmount * (dailyPercent / 100)) * (elapsedTime / dayValue10 / 10)
 
                 } else if (elapsedTime > dayValue40 && elapsedTime <= dayValue50) {
-                    dailyPercent = '4.5'
+                    dailyPercent = '6.5'
                     unstakeFee = '12%'
                     totalEarned = (depoAmount * (dailyPercent / 100)) * (elapsedTime / dayValue10 / 10)
 
                 } else if (elapsedTime > dayValue50) {
-                    dailyPercent = '5.5'
+                    dailyPercent = '8.5'
                     unstakeFee = '12%'
                     totalEarned = depoAmount * (dailyPercent / 100) * (elapsedTime / dayValue10 / 10)
                     daysToMax = 'Max'
@@ -583,7 +582,7 @@ function WealthMountain() {
                         <div onClick= {() => {
                         setMobile(true)
                         }}>
-                        <a href="https://www.encryptosecurity.com/AuditRecord?project=64" target="_blank"
+                        <a href="https://www.encryptosecurity.com/AuditRecord?project=64" target="_blank" rel="noreferrer"
                             className="swap_btn"
                             style={{
                             color: 'white',
@@ -598,7 +597,7 @@ function WealthMountain() {
                         <div onClick= {() => {
                         setMobile(true)
                         }}>
-                        <a href="" target="_blank"
+                        <a href="https://www.bscscan.com/" target="_blank" rel="noreferrer"
                             className="swap_btn"
                             style={{
                             color: 'white',
@@ -613,7 +612,7 @@ function WealthMountain() {
                         <div onClick={() => {
                         setMobile(true)
                         }}>
-                        <a href="https://lottery.wcminer.finance/whitepaper.pdf" target="_blank"
+                        <a href="https://lottery.wcminer.finance/whitepaper.pdf" target="_blank" rel="noreferrer"
                             className="stable_btn"
                             style={{
                             color: 'white',
@@ -674,7 +673,7 @@ function WealthMountain() {
                 {/* </Card> */}
                 <div className="header_menu">
                     <Item>
-                        <a href="https://www.encryptosecurity.com/AuditRecord?project=64" target="_blank"
+                        <a href="https://www.encryptosecurity.com/AuditRecord?project=64" target="_blank" rel="noreferrer"
                         style={{
                             textDecoration: 'none',
                             fontWeight: "bolder",
@@ -686,7 +685,7 @@ function WealthMountain() {
                         </a>
                     </Item>
                     <Item>
-                        <a href="" target="_blank"
+                        <a href="https://www.bscscan.com/" target="_blank" rel="noreferrer"
                         style={{
                             textDecoration: 'none',
                             fontWeight: "bolder",
