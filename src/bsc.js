@@ -824,7 +824,7 @@ function WealthMountain() {
                                     <Button className="custom-button source mt-3" outline onClick={withdrawDivs}>collect</Button>
                                 </Col>
                             </Row>
-                            <small className="pt-2 source">Note: Collecting will reset all stakes to 1.5% daily. Compound will add to your stakes while doing the same.</small>
+                            <small className="pt-2 source">Note: Collecting will reset all stakes to 3.5% daily. Compound will add to your stakes while doing the same.</small>
                         </Card>
                     </CardDeck>
                     <CardDeck className="pl-3 pr-3 pb-3">
