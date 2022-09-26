@@ -59,6 +59,7 @@ const Item = styled('div')(({ theme }) => ({
     background: "#000000b8",
     minWidth: '150px',
     alignSelf: 'center',
+    fontFamily: 'Roboto',
   }));
 
 function WealthMountain() {
@@ -578,7 +579,7 @@ function WealthMountain() {
                         style={{ width: 'auto', height: '96px' }}
                     />
                 {/* </Card> */}
-                <Grid className="header_menu" item xs={12} sm={6.6}>
+                <div className="header_menu">
                     <Item>
                         <a href="https://www.encryptosecurity.com/AuditRecord?project=64" target="_blank"
                         style={{
@@ -627,11 +628,11 @@ function WealthMountain() {
                         {/* <TelegramIcon/> */}
                         </a>
                     </Item>
-                    </Grid>
+                </div>
                 
                 <Button
                     className='custom-button'
-                    style={{maxHeight: "43px"}}
+                    style={{maxHeight: "43px", backgroundColor:'#000000b8', color:'#ffbb00'}}
                     onClick={requestAccount}>
                     {connectButtonText}
                 </Button>
@@ -667,19 +668,19 @@ function WealthMountain() {
                             </h5>
                         </Card>
                         <Card body className="text-center text-lightblue">
-                            <h5 className="calvino text-lightblue">USERS</h5>
+                            <h5 className="calvino text-lightblue">Users</h5>
                             <h5 className="source font-weight-bold text-white">
                                 {Number(totalUsers) === 0 ? <>?</> : <>{Number(totalUsers)}</>}
                             </h5>
                         </Card>
                         <Card body className="text-center text-lightblue">
-                            <h5 className="calvino text-lightblue">STAKE FEE</h5>
+                            <h5 className="calvino text-lightblue">Stake Fee</h5>
                             <h5 className="source font-weight-bold text-white">
                                 10%
                             </h5>
                         </Card>
                         <Card body className="text-center text-lightblue">
-                            <h5 className="calvino text-lightblue">COLLECTION FEE</h5>
+                            <h5 className="calvino text-lightblue">Collection Fee</h5>
                             <h5 className="source font-weight-bold text-white">
                                 10%
                             </h5>
@@ -688,8 +689,8 @@ function WealthMountain() {
                 </Container>
                 <TabsContainer className="pt-3">
                     <Tabs selectedTab={activeTab} onChange={handleChange}>
-                        <Tab label="CURRENT STAKES & YIELD" value={0}></Tab>
-                        <Tab label="ENTER STAKE" value={1}></Tab>
+                        <Tab label="Current Stakes & Yield" value={0}></Tab>
+                        <Tab label="Enter Stake" value={1}></Tab>
                         {/* <Tab label="LOTTERY" value={2}></Tab> */}
                     </Tabs>
                 </TabsContainer>
@@ -703,12 +704,12 @@ function WealthMountain() {
                     </Row>
                     <CardDeck className="p-3">
                         <Card body className="text-center text-lightblue">
-                            <h4 className="calvino text-lightblue">TOTAL STAKED VALUE</h4>
+                            <h4 className="calvino text-lightblue">Total Staked Value</h4>
                             <h1 className="source font-weight-bold text-white">$<TotalStakedValue /></h1>
                             <UnstakeOptions />
                         </Card>
                         <Card body className="text-center text-lightblue">
-                            <h4 className="calvino text-lightblue">TOTAL EARNINGS</h4>
+                            <h4 className="calvino text-lightblue">Total Earnings</h4>
                             <CardDeck>
                                 <Card style={{background: "transparent"}}>
                                     <h4 className="source font-weight-bold text-white"><TotalEarnedPercent /></h4>
@@ -728,7 +729,7 @@ function WealthMountain() {
                     </CardDeck>
                     <CardDeck className="pl-3 pr-3 pb-3">
                         <Card body className="text-center text-lightblue">
-                            <h5 className="calvino text-lightblue">REFERRALS EARNED</h5>
+                            <h5 className="calvino text-lightblue">Referrals Earned</h5>
                             {refBonusLoading ? <></> :
                                 <>
                                     <h4 className="source font-weight-bold text-white">${referralAccrued}</h4>
@@ -742,7 +743,7 @@ function WealthMountain() {
 
                         </Card>
                         <Card body className="text-center text-lightblue">
-                            <h5 className="calvino text-lightblue">REFERRAL LINK</h5>
+                            <h5 className="calvino text-lightblue">Referral Link</h5>
                             <h3 type="button" onClick={() => navigator.clipboard.writeText("https://busdautomine.org?ref=" + userWalletAddress)} className="referralButton source font-weight-bold"><FaCopy size="1.6em" className="pr-3" />COPY LINK</h3>
                             <small className="source text-lightblue">Earn 10% when someone uses your referral link.</small>
                         </Card>
@@ -780,15 +781,15 @@ function WealthMountain() {
                 <TabPanel value={activeTab} selectedIndex={1}>
                     <CardDeck className="p-3">
                         <Card body className="text-center text-lightblue">
-                            <h4 className="calvino text-lightblue">ENTER STAKE</h4>
+                            <h4 className="calvino text-lightblue">Enter Stake</h4>
                             <p className="source text-center">Approve and stake your BUSD here. You can view your ongoing stakes in the <span className="font-weight-bold">Current Stakes & Yield</span> tab.</p>
                             <Form>
                                 <FormGroup>
-                                    <Label className="source font-weight-bold text-lightblue">STAKE AMOUNT</Label>
+                                    <Label className="source font-weight-bold text-lightblue">Stake Amount</Label>
                                     <InputGroup>
                                         <Input
                                             className="custom-input text-center source"
-                                            placeholder="MINIMUM 50 BUSD"
+                                            placeholder="Minimum 50 BUSD"
                                             onChange={updateStakingAmount}
                                         ></Input>
                                     </InputGroup>
@@ -802,14 +803,14 @@ function WealthMountain() {
                             <a className="source text-left text-underline text-lightblue" href="https://pancakeswap.finance/swap" target="_blank" rel="noreferrer"><small className="source text-lightblue text-left"><FaSearchDollar size="1.7em" className="pr-2" />Swap your tokens for BUSD here. </small></a>
                         </Card>
                         <Card body className="source text-center">
-                            <h4 className="calvino text-lightblue">IMPORTANT INFORMATION</h4>
-                            <p className="text-left"> <span className="font-weight-bold">Stake or unstake at any time. </span>When a new stake is made, overall yield accrual is set to 1.5% until day 20.</p>
-                            <p className="text-left"><span className="font-weight-bold">Approval is required </span>prior to staking your BUSD. The protocol will only request approval for the amount entered.</p>
-                            <p className="text-left"><span className="font-weight-bold">Staking fee is a flat 10%. </span>Use the Earnings Calculator to determine how much a stake will earn daily.</p>
-                            <small className="text-left">Disclaimer: Dividend payouts will take place at a flat rate. Payouts continue contingent on Smart Contract health and liquidity.</small>
-                            <small className="pt-3 text-center font-weight-bold">
+                            <h4 className="calvino text-lightblue">Important Information</h4>
+                            <p className="text-left text-white"> <span className="font-weight-bold">Stake or unstake at any time. </span>When a new stake is made, overall yield accrual is set to 3.5% until day 20.</p>
+                            <p className="text-left text-white"><span className="font-weight-bold">Approval is required </span>prior to staking your BUSD. The protocol will only request approval for the amount entered.</p>
+                            <p className="text-left text-white"><span className="font-weight-bold">Staking fee is a flat 10%. </span>Use the Earnings Calculator to determine how much a stake will earn daily. All Fee’s will be used to invest in other Dapp’s across the Defi Market, returns will be deposited in the contract automatically.</p>
+                            <small className="text-left text-white">Disclaimer: Dividend payouts will take place at a flat rate. Payouts continue contingent on Smart Contract health and liquidity. <Link className="text-lightblue text-white font-weight-bold" to="/faq">For further questions, please read our DOCS</Link></small>
+                            {/* <small className="pt-3 text-center font-weight-bold">
                                 <Link className="text-lightblue" to="/faq">For further questions, please read our DOCS</Link>
-                            </small>
+                            </small> */}
                         </Card>
                     </CardDeck>
 
@@ -818,7 +819,7 @@ function WealthMountain() {
                         <Container className="pb-3 pt-3 calvino text-center">
                             <CardDeck>
                             <Card /*data-aos="fade-right" data-aos-duration="800" */className="p-3">
-                                <h3>DIVIDENDS</h3>
+                                <h3>Dividends</h3>
 
                                 <table className="source" border="2">
                                 <tbody>
@@ -830,27 +831,27 @@ function WealthMountain() {
                                     <tr>
                                     <td>1</td>
                                     <td>Day 1 - 20</td>
-                                    <td>1.5% daily</td>
+                                    <td>3.5% daily</td>
                                     </tr>
                                     <tr>
                                     <td>2</td>
                                     <td>Day 20 - 30</td>
-                                    <td>2.5% daily</td>
+                                    <td>4.5% daily</td>
                                     </tr>
                                     <tr>
                                     <td>3</td>
                                     <td>Day 30 - 40</td>
-                                    <td>3.5% daily</td>
+                                    <td>5.5% daily</td>
                                     </tr>
                                     <tr>
                                     <td>4</td>
                                     <td>Day 40 - 50</td>
-                                    <td>4.5% daily</td>
+                                    <td>6.5% daily</td>
                                     </tr>
                                     <tr>
                                     <td>♛ 5 </td>
                                     <td>Day 50 - ∞</td>
-                                    <td>5.5% daily</td>
+                                    <td>8.5% daily</td>
                                     </tr>
                                 </tbody>
                                 </table>
@@ -861,8 +862,7 @@ function WealthMountain() {
                                 <small className="source">Disclaimer: Dividend payouts are fixed and the TVL fluctuations do not effect the daily yield like in traditional miners.</small>
                             </Card>
                             <Card /*data-aos="fade-down" data-aos-duration="800"*/ className="p-3">
-                                <h3>UNSTAKE FEES</h3>
-
+                                <h3>Unstake Fees</h3>
                                 <table className="source" border="2">
                                 <tbody>
                                     <tr>
@@ -891,10 +891,10 @@ function WealthMountain() {
                                 <br /><small className="source">Volume in and out of the protocol help the platform thrive. Fees are diversified across different asset classes and diversification vehicles.</small>
                             </Card>
                             <Card /*data-aos="fade-left" data-aos-duration="800"*/ className="p-3">
-                                <h3>STAKING</h3>
+                                <h3>Staking</h3>
                                 <span className="source text-center pl-2 pb-2 pr-3">
                                 10% fee on intial stakes<br /><br />
-                                Stakes immediately start earning 1.5% daily<br /><br />
+                                Stakes immediately start earning 3.5% daily<br /><br />
                                 Unstake at any time (earnings included)<br /><br />
                                 Unstake fees start at 20% and decrease to 12%<br /><br />
                                 10% fee on dividend collections<br /><br />
@@ -1029,24 +1029,24 @@ function WealthMountain() {
                 { activeTab !== 2 &&
                 <Container className="pt-3">
                     <Card body>
-                        <h2 className="calvino text-center text-lightblue">EARNINGS CALCULATOR</h2>
+                        <h2 className="calvino text-center text-lightblue">Earnings Calculator</h2>
                         <CardDeck>
                             <Card body className="text-center">
-                                <h3 className="calvino font-weight-bold text-lightblue">STAKING</h3>
+                                <h3 className="calvino font-weight-bold text-lightblue">Staking</h3>
                                 <Form>
                                     <FormGroup>
-                                        <Label className="source font-weight-bold text-lightblue">STAKE AMOUNT</Label>
+                                        <Label className="source font-weight-bold text-lightblue">Stake Amount</Label>
                                         <InputGroup>
                                             <Input
                                                 className="custom-input text-center source"
-                                                placeholder="MINIMUM 50 BUSD"
+                                                placeholder="Minimum 50 BUSD"
                                                 // onChange={(e) => this.setCalcAmount(`${e.target.value}`)}
                                                 onChange={updateCalc}
                                             ></Input>
                                         </InputGroup>
                                     </FormGroup>
                                 </Form>
-                                <Label className="source font-weight-bold text-lightblue">DAYS STAKED</Label>
+                                <Label className="source font-weight-bold text-lightblue">Days Staked</Label>
                                 <Col className="text-center">
                                     <Box>
                                         <Slider
@@ -1059,7 +1059,7 @@ function WealthMountain() {
                                 </Col>
                             </Card>
                             <Card body className="text-center">
-                                <h3 className="calvino font-weight-bold text-lightblue">EARNINGS</h3>
+                                <h3 className="calvino font-weight-bold text-lightblue">Earnings</h3>
                                 <CardDeck>
                                     <Card style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
                                         <h3 className="calvino text-white">${calcTotalDividends}</h3>
@@ -1090,13 +1090,13 @@ function WealthMountain() {
             <div className="pt-5 text-center calvino text-lightblue">
                 <Card style={{borderRadius: '0px', padding:'70px 10px 50px 10px'}}>
                     <CardDeck className="custom-footer">
+                        <a href="https://www.encryptosecurity.com/AuditRecord?project=64" target="_blank" rel="noreferrer"> AUDIT </a>
+                        <a href="https://bscscan.com/address/0xae12362c87dab9cf6567f63c892dd80f38828d8f" target="_blank" rel="noreferrer"> CONTRACT </a>
                         <a href="https://wcminer.com/whitepaper.pdf" target="_blank" rel="noreferrer"> DOCS </a>
                         <a href="https://twitter.com/WolfOfCrypto885" target="_blank" rel="noreferrer"> TWITTER </a>
                         <a href="https://t.me/WCMinerOfficial" target="_blank" rel="noreferrer"> TELEGRAM </a>
-                        <a href="https://bscscan.com/address/0xae12362c87dab9cf6567f63c892dd80f38828d8f" target="_blank" rel="noreferrer"> CONTRACT </a>
-                        <a href="https://www.encryptosecurity.com/AuditRecord?project=64" target="_blank" rel="noreferrer"> AUDIT </a>
                     </CardDeck>
-                    <p style={{fontSize: '20px', color:'white', paddingTop:'30px'}}>© Wolf Crypto Team , All Rights Reserved</p>
+                    <p style={{fontSize: '20px', color:'white', paddingTop:'30px', fontWeight:'bold'}}>© Wolf Crypto Team , All Rights Reserved</p>
                 </Card>
             </div>
         </>

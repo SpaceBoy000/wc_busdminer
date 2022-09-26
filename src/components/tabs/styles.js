@@ -11,10 +11,11 @@ export const StylizedTab = styled.button`
   padding: 10px 10px;
   margin: 0.8rem;
   font-size: 1.25rem;
-  background: linear-gradient(269.42deg, #CD8416 33.5%, #FFBB55 69.21%);
+  //background: linear-gradient(269.42deg, #CD8416 33.5%, #FFBB55 69.21%);
+  background: #000000B8;
   mix-blend-mode: normal;
-  border-radius: 15px;
-  font-family:Open Sans;
+  border-radius: 25px;
+  font-family: Roboto;
   border: none;
   border-bottom-color: none;
   outline: none;
@@ -23,7 +24,7 @@ export const StylizedTab = styled.button`
   ${(p) =>
     p.active &&
     css`
-      color: black;
+      color: #ffbb00;
       font-weight: bold;
       outline: none;
       border:none;
