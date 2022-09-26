@@ -13,6 +13,7 @@ import wealthMountainABI from './contracts/WealthMountainBSC.json';
 import styled from "styled-components";
 import { Tabs, Tab, TabPanel } from "./components/tabs/tabs";
 import { FaCopy, FaWallet, FaUserShield, FaSearchDollar } from 'react-icons/fa';
+import { GiHamburgerMenu } from "react-icons/gi"
 
 import logoImg from "./assets/img/logos/logo.svg";
 import lotteryBanner from "./assets/lottery_banner.gif";
@@ -93,6 +94,8 @@ function WealthMountain() {
     const [refBonusLoading, setRefBonusLoading] = useState(false);
     const [connectButtonText, setConnectButtonText] = useState('CONNECT')
 
+    const [mobile, setMobile] = useState(false);
+    console.log("mobile: ", mobile);
     // const [countdown, setCountdown] = useState({
     //     alive: true,
     //     days: 0,
@@ -570,6 +573,96 @@ function WealthMountain() {
 
     return (
         <>
+            { mobile === true ? (
+                <div className="mobile_head">
+                    <div className="mobile_herader_content">
+                    <div style={{alignSelf:"center", marginBottom:"30px"}}>
+                        <img src="./favicon.png" alt="ETH Snowball" height="64px"/>
+                    </div>
+                    <div className="mobile_four_btn">
+                        <div onClick= {() => {
+                        setMobile(true)
+                        }}>
+                        <a href="https://www.encryptosecurity.com/AuditRecord?project=64" target="_blank"
+                            className="swap_btn"
+                            style={{
+                            color: 'white',
+                            textDecoration: 'none',
+                            fontWeight:"bolder",
+                            fontFamily:'Roboto'
+                            }}
+                        >
+                            Audit
+                        </a>
+                        </div>
+                        <div onClick= {() => {
+                        setMobile(true)
+                        }}>
+                        <a href="" target="_blank"
+                            className="swap_btn"
+                            style={{
+                            color: 'white',
+                            textDecoration: 'none',
+                            fontWeight:"bolder",
+                            fontFamily:'Roboto'
+                            }}
+                        >
+                            Contract
+                        </a>
+                        </div>
+                        <div onClick={() => {
+                        setMobile(true)
+                        }}>
+                        <a href="https://lottery.wcminer.finance/whitepaper.pdf" target="_blank"
+                            className="stable_btn"
+                            style={{
+                            color: 'white',
+                            textDecoration: 'none',
+                            fontWeight:"bolder",
+                            fontFamily:'Roboto'
+                            }}
+                        >
+                            <span> Whitepaper </span>
+                            {/* <TwitterIcon/> */}
+                        </a>
+                        </div>
+                        <div onClick={() => {
+                        setMobile(true)
+                        }}>
+                        <a href="https://lottery.wcminer.finance/" target="__blank"
+                            className="bridge_btn"
+                            style={{
+                            color: 'white',
+                            textDecoration: 'none',
+                            fontWeight:"bolder",
+                            fontFamily:'Roboto'
+                            }}
+                        >
+                            Lottery
+                        </a>
+                        </div>
+                    </div>
+                    <div style={{flex:1}}></div>
+                    <div
+                        className="mobile_connect"
+                    >
+                        <Button
+                            className='custom-button'
+                            style={{maxHeight: "43px", backgroundColor:'#000000b8', color:'#ffbb00'}}
+                            onClick={requestAccount}>
+                            {connectButtonText}
+                        </Button>
+                    </div>
+                    </div>
+                    <div
+                    className="empty_mobile"
+                    onClick={() => {
+                        setMobile(false)
+                    }}
+                    ></div>
+                </div>
+            )
+            : null }
             <div className="custom-header">
                 {/* <Card className="px-5 py-2"> */}
                     <img
@@ -631,11 +724,19 @@ function WealthMountain() {
                 </div>
                 
                 <Button
-                    className='custom-button'
+                    className='custom-button desktop-button'
                     style={{maxHeight: "43px", backgroundColor:'#000000b8', color:'#ffbb00'}}
                     onClick={requestAccount}>
                     {connectButtonText}
                 </Button>
+                <div 
+                    className='mobile_btn'
+                    onClick={() => {
+                        setMobile(true)
+                    }}
+                >
+                    <GiHamburgerMenu/>
+                </div>
             </div>
             {/* <Container>
                 <Button
