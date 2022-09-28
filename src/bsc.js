@@ -1187,6 +1187,17 @@ function WealthMountain() {
                 }
                 
             </Container>
+            <div style={{margin: "50px 20px", textAlign: 'center', alignItems:'center', color:'white'}}>
+                <h2 className='text-white' style={{fontWeight:'bold', margin:'80px 0px 50px 0px'}}>EARN 3.3% DAILY REWARDS ON WC MINER BNB</h2>
+                <div style={{display:'flex', justifyContent:'center'}}>
+                    <div style={{background:'black', border:'solid 3px #fa9a00', borderRadius:'20px', padding:'50px 80px '}}>
+                        <h2 className='text-white' style={{fontWeight:'bold', marginBottom:'30px'}}>MINER</h2>
+                        <a href="https://wcminer.com/" target="_blank" style={{fontSize:'20px', fontWeight:'600', background:'#ffbb00', padding:'10px 50px', borderRadius:'10px'}}>
+                            <span className='source'>INVEST</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
             <div className="pt-5 text-center calvino text-lightblue">
                 <Card style={{borderRadius: '0px', padding:'70px 10px 50px 10px'}}>
                     <CardDeck className="custom-footer">
@@ -1196,7 +1207,7 @@ function WealthMountain() {
                         <a href="https://twitter.com/WolfOfCrypto885" target="_blank" rel="noreferrer"> TWITTER </a>
                         <a href="https://t.me/WCMinerOfficial" target="_blank" rel="noreferrer"> TELEGRAM </a>
                     </CardDeck>
-                    <p style={{fontSize: '20px', color:'white', paddingTop:'30px', fontWeight:'bold'}}>© Wolf Crypto Team , All Rights Reserved</p>
+                    <p style={{fontSize: '20px', color:'white', paddingTop:'30px', fontWeight:'bold'}}>© Wolf of Crypto Team , All Rights Reserved</p>
                 </Card>
             </div>
         </>
