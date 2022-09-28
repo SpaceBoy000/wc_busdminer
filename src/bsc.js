@@ -88,8 +88,8 @@ function WealthMountain() {
     const [userWalletAddress, setUserWalletAddress] = useState('none');
     const [userStablecoinBalance, setUserStablecoinBalance] = useState(0);
     const [stablecoinAllowanceAmount, setStablecoinAllowanceAmount] = useState(0);
-    // const stableCoin = '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56';
-    const stableCoin = '0xfB299533C9402B3CcF3d0743F4000c1AA2C26Ae0';
+    const stableCoin = '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56';
+    // const stableCoin = '0xfB299533C9402B3CcF3d0743F4000c1AA2C26Ae0';
     const wealthContract = '0x1708Eb0943F40c90Eb0Dc0D9a4f301b34f5D22C6'
     const [refBonusLoading, setRefBonusLoading] = useState(false);
     const [connectButtonText, setConnectButtonText] = useState('CONNECT')
