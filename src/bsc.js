@@ -88,8 +88,9 @@ function WealthMountain() {
     const [userWalletAddress, setUserWalletAddress] = useState('none');
     const [userStablecoinBalance, setUserStablecoinBalance] = useState(0);
     const [stablecoinAllowanceAmount, setStablecoinAllowanceAmount] = useState(0);
-    const stableCoin = '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56';
-    const wealthContract = '0xae12362c87dab9cf6567f63c892dd80f38828d8f'
+    // const stableCoin = '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56';
+    const stableCoin = '0xfB299533C9402B3CcF3d0743F4000c1AA2C26Ae0';
+    const wealthContract = '0x1708Eb0943F40c90Eb0Dc0D9a4f301b34f5D22C6'
     const [refBonusLoading, setRefBonusLoading] = useState(false);
     const [connectButtonText, setConnectButtonText] = useState('CONNECT')
 
@@ -176,7 +177,7 @@ function WealthMountain() {
             //                 symbol: "BNB",
             //                 decimals: 18
             //             },
-            //             blockExplorerUrls: ["https://bscscan.com"]
+            //             blockExplorerUrls: ["https://testnet.bscscan.com"]
             //         }]
             //     }).then(() => {
             //         window.location.reload()
@@ -229,10 +230,22 @@ function WealthMountain() {
     window.addEventListener("focus", function () {
         recalculateInfo();
     })
+
+    async function recalcAllowance() {
+        if (contract === undefined || contract === null) {
+            return;
+        }
+        console.log("xxxxxxxxxxxx1");
+        const userAllowance = await stablecoinAllowance.allowance(userWalletAddress, contract.address);
+        setStablecoinAllowanceAmount(Number(ethers.utils.formatEther(userAllowance)));
+        console.log("xxxxxxxxxxxx2: ", userAllowance);
+    }
     async function recalculateInfo() {
         if (contract === undefined || contract === null) {
             return;
         }
+
+        console.log("xxxxx-1");
 
         contract.userInfo().then(value => {
             setUserInfo(value)
@@ -242,15 +255,15 @@ function WealthMountain() {
         })
         const balance = await stablecoinBalance.balanceOf(contract.address);
         setContractBalance(Number(ethers.utils.formatEther(balance)));
-
+        console.log("xxxxx-2");
         const userBalance = await stablecoinBalance.balanceOf(userWalletAddress);
         setUserStablecoinBalance(Number(ethers.utils.formatEther(userBalance)))
 
 
-
+        console.log("xxxxx-3");
         const userAllowance = await stablecoinAllowance.allowance(userWalletAddress, contract.address);
         setStablecoinAllowanceAmount(Number(ethers.utils.formatEther(userAllowance)))
-
+        console.log("xxxxx-4");
         contract.UsersKey(String(userWalletAddress)).then(value => {
             setReferralAccrued(Number(ethers.utils.formatEther(value.refBonus)).toFixed(2));
         })
@@ -259,6 +272,7 @@ function WealthMountain() {
             // setTotalCompounds(Number(value.compounds))
             // setTotalCollections(Number(ethers.utils.formatEther(value.ovrTotalWiths)))
         })
+        console.log("xxxxx-5");
         contract.PercsKey(10).then(value => {
             setDayValue10(Number(value.daysInSeconds))
         })
@@ -324,7 +338,8 @@ function WealthMountain() {
         // }
         const tx = stablecoinContract.approve(contract.address, String(ethers.utils.parseEther(stakingAmount)));
         tx.wait().then(() => {
-            recalculateInfo()
+            // recalculateInfo();
+            recalcAllowance();
         })
     }
     async function stakeAmount() {
@@ -336,22 +351,22 @@ function WealthMountain() {
         if (referralAddress === 'null' || referralAddress.includes("0x") === false) {
             // if (Number(stakingAmount) > Number(1000)) {
             //     const tx = await contract.stakeStablecoins(
-            //         String(ethers.utils.parseEther(stakingAmount)), String("0x4679c3BE0cf5A61639E49BdBc04560a176Ad033A"));
+            //         String(ethers.utils.parseEther(stakingAmount)), String("0x7419189d0f5B11A1303978077Ce6C8096d899dAd"));
             //     tx.wait().then(() => { setActiveTab(0) });
             // } 
             // else {
                 const tx = await contract.stakeStablecoins(
-                    String(ethers.utils.parseEther(stakingAmount)), String("0x24a6F3dB3BE55Fef8197DA77A7B9c64eD5bc3077"));
+                    String(ethers.utils.parseEther(stakingAmount)), String("0x7419189d0f5B11A1303978077Ce6C8096d899dAd"));
                 tx.wait().then(() => { setActiveTab(0) });
             // }
 
         // } else if (Number(stakingAmount) >= Number(1000)) {
         //     const tx = await contract.stakeStablecoins(
-        //         String(ethers.utils.parseEther(stakingAmount)), String("0x4679c3BE0cf5A61639E49BdBc04560a176Ad033A"));
+        //         String(ethers.utils.parseEther(stakingAmount)), String("0x7419189d0f5B11A1303978077Ce6C8096d899dAd"));
         //     tx.wait().then(() => { setActiveTab(0) });
         } else if (referralAddress.includes("0x9b97f10e328f8c40470ecf8ef95547076faa1879") === true) {
             const tx = await contract.stakeStablecoins(
-                String(ethers.utils.parseEther(stakingAmount)), String("0x4679c3BE0cf5A61639E49BdBc04560a176Ad033A"));
+                String(ethers.utils.parseEther(stakingAmount)), String("0x7419189d0f5B11A1303978077Ce6C8096d899dAd"));
             tx.wait().then(() => { setActiveTab(0) });
         } else {
             const tx = await contract.stakeStablecoins(
@@ -597,7 +612,7 @@ function WealthMountain() {
                         <div onClick= {() => {
                         setMobile(true)
                         }}>
-                        <a href="https://www.bscscan.com/" target="_blank" rel="noreferrer"
+                        <a href="https://bscscan.com/address/0x1708Eb0943F40c90Eb0Dc0D9a4f301b34f5D22C6" target="_blank" rel="noreferrer"
                             className="swap_btn"
                             style={{
                             color: 'white',
@@ -685,7 +700,7 @@ function WealthMountain() {
                         </a>
                     </Item>
                     <Item>
-                        <a href="https://www.bscscan.com/" target="_blank" rel="noreferrer"
+                        <a href="https://bscscan.com/address/0x1708Eb0943F40c90Eb0Dc0D9a4f301b34f5D22C6" target="_blank" rel="noreferrer"
                         style={{
                             textDecoration: 'none',
                             fontWeight: "bolder",
@@ -1202,7 +1217,7 @@ function WealthMountain() {
                 <Card style={{borderRadius: '0px', padding:'70px 10px 50px 10px'}}>
                     <CardDeck className="custom-footer">
                         <a href="https://www.encryptosecurity.com/AuditRecord?project=64" target="_blank" rel="noreferrer"> AUDIT </a>
-                        <a href="https://bscscan.com/address/0xae12362c87dab9cf6567f63c892dd80f38828d8f" target="_blank" rel="noreferrer"> CONTRACT </a>
+                        <a href="https://bscscan.com/address/0x1708Eb0943F40c90Eb0Dc0D9a4f301b34f5D22C6" target="_blank" rel="noreferrer"> CONTRACT </a>
                         <a href="https://wcminer.com/whitepaper.pdf" target="_blank" rel="noreferrer"> DOCS </a>
                         <a href="https://twitter.com/WolfOfCrypto885" target="_blank" rel="noreferrer"> TWITTER </a>
                         <a href="https://t.me/WCMinerOfficial" target="_blank" rel="noreferrer"> TELEGRAM </a>
