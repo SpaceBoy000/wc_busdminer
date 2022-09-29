@@ -16,7 +16,7 @@ import { FaCopy, FaWallet, FaUserShield, FaSearchDollar } from 'react-icons/fa';
 import { GiHamburgerMenu } from "react-icons/gi"
 
 // import logoImg from "./assets/img/logos/logo.svg";
-// import lotteryBanner from "./assets/lottery_banner.gif";
+import lotteryBanner from "./assets/wcbusdlong.gif";
 
 import {
     Button,
@@ -627,7 +627,7 @@ function WealthMountain() {
                         <div onClick={() => {
                         setMobile(true)
                         }}>
-                        <a href="https://lottery.wcminer.finance/whitepaper.pdf" target="_blank" rel="noreferrer"
+                        <a href="/whitepaper.pdf" target="_blank" rel="noreferrer"
                             className="stable_btn"
                             style={{
                             color: 'white',
@@ -752,17 +752,18 @@ function WealthMountain() {
                     <GiHamburgerMenu/>
                 </div>
             </div>
-            {/* <Container>
+            <Container>
                 <Button
                     style={{background: 'transparent', border: 'none'}} 
-                    onClick={()=>setActiveTab(2)}>
+                    // onClick={()=>setActiveTab(2)}
+                    >
                     <img
                         alt="..."
                         src={lotteryBanner}
                         style={{ width: '100%', marginTop: '10px', border: '1px solid rgb(66 45 14)', borderRadius: '10px'}}
                     />
                 </Button>
-            </Container> */}
+            </Container>
             {/* <Container>
                 {countdown.alive && 
                     <>
@@ -1218,9 +1219,9 @@ function WealthMountain() {
                     <CardDeck className="custom-footer">
                         <a href="https://www.encryptosecurity.com/AuditRecord?project=64" target="_blank" rel="noreferrer"> AUDIT </a>
                         <a href="https://bscscan.com/address/0x1708Eb0943F40c90Eb0Dc0D9a4f301b34f5D22C6" target="_blank" rel="noreferrer"> CONTRACT </a>
-                        <a href="https://wcminer.com/whitepaper.pdf" target="_blank" rel="noreferrer"> DOCS </a>
+                        <a href="/whitepaper.pdf" target="_blank" rel="noreferrer"> DOCS </a>
                         <a href="https://twitter.com/WolfOfCrypto885" target="_blank" rel="noreferrer"> TWITTER </a>
-                        <a href="https://t.me/WCMinerOfficial" target="_blank" rel="noreferrer"> TELEGRAM </a>
+                        <a href="https://t.me/WCMinerBUSD" target="_blank" rel="noreferrer"> TELEGRAM </a>
                     </CardDeck>
                     <p style={{fontSize: '20px', color:'white', paddingTop:'30px', fontWeight:'bold'}}>© Wolf of Crypto Team , All Rights Reserved</p>
                 </Card>
