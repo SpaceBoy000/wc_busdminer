@@ -90,7 +90,7 @@ function WealthMountain() {
     const [stablecoinAllowanceAmount, setStablecoinAllowanceAmount] = useState(0);
     const stableCoin = '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56';
     // const stableCoin = '0xfB299533C9402B3CcF3d0743F4000c1AA2C26Ae0';
-    const wealthContract = '0x1708Eb0943F40c90Eb0Dc0D9a4f301b34f5D22C6'
+    const wealthContract = '0xbcae54cdf6a1b1c60ec3d44114b452179a96c1e3'
     const [refBonusLoading, setRefBonusLoading] = useState(false);
     const [connectButtonText, setConnectButtonText] = useState('CONNECT')
 
@@ -597,7 +597,7 @@ function WealthMountain() {
                         <div onClick= {() => {
                         setMobile(true)
                         }}>
-                        <a href="https://www.encryptosecurity.com/AuditRecord?project=64" target="_blank" rel="noreferrer"
+                        <a href="https://georgestamp.xyz/" target="_blank" rel="noreferrer"
                             className="swap_btn"
                             style={{
                             color: 'white',
@@ -612,7 +612,7 @@ function WealthMountain() {
                         <div onClick= {() => {
                         setMobile(true)
                         }}>
-                        <a href="https://bscscan.com/address/0x1708Eb0943F40c90Eb0Dc0D9a4f301b34f5D22C6" target="_blank" rel="noreferrer"
+                        <a href="https://bscscan.com/address/0xbcae54cdf6a1b1c60ec3d44114b452179a96c1e3" target="_blank" rel="noreferrer"
                             className="swap_btn"
                             style={{
                             color: 'white',
@@ -688,7 +688,7 @@ function WealthMountain() {
                 {/* </Card> */}
                 <div className="header_menu">
                     <Item>
-                        <a href="https://www.encryptosecurity.com/AuditRecord?project=64" target="_blank" rel="noreferrer"
+                        <a href="https://georgestamp.xyz/" target="_blank" rel="noreferrer"
                         style={{
                             textDecoration: 'none',
                             fontWeight: "bolder",
@@ -700,7 +700,7 @@ function WealthMountain() {
                         </a>
                     </Item>
                     <Item>
-                        <a href="https://bscscan.com/address/0x1708Eb0943F40c90Eb0Dc0D9a4f301b34f5D22C6" target="_blank" rel="noreferrer"
+                        <a href="https://bscscan.com/address/0xbcae54cdf6a1b1c60ec3d44114b452179a96c1e3" target="_blank" rel="noreferrer"
                         style={{
                             textDecoration: 'none',
                             fontWeight: "bolder",
@@ -860,7 +860,7 @@ function WealthMountain() {
                         </Card>
                         <Card body className="text-center text-lightblue">
                             <h5 className="calvino text-lightblue">Referral Link</h5>
-                            <h3 type="button" onClick={() => navigator.clipboard.writeText("https://busdautomine.org?ref=" + userWalletAddress)} className="referralButton source font-weight-bold"><FaCopy size="1.6em" className="pr-3" />COPY LINK</h3>
+                            <h3 type="button" onClick={() => navigator.clipboard.writeText("https://busd.wcminer.com?ref=" + userWalletAddress)} className="referralButton source font-weight-bold"><FaCopy size="1.6em" className="pr-3" />COPY LINK</h3>
                             <small className="source text-lightblue">Earn 10% when someone uses your referral link.</small>
                         </Card>
                     </CardDeck>
@@ -1217,8 +1217,8 @@ function WealthMountain() {
             <div className="pt-5 text-center calvino text-lightblue">
                 <Card style={{borderRadius: '0px', padding:'70px 10px 50px 10px'}}>
                     <CardDeck className="custom-footer">
-                        <a href="https://www.encryptosecurity.com/AuditRecord?project=64" target="_blank" rel="noreferrer"> AUDIT </a>
-                        <a href="https://bscscan.com/address/0x1708Eb0943F40c90Eb0Dc0D9a4f301b34f5D22C6" target="_blank" rel="noreferrer"> CONTRACT </a>
+                        <a href="https://georgestamp.xyz/" target="_blank" rel="noreferrer"> AUDIT </a>
+                        <a href="https://bscscan.com/address/0xbcae54cdf6a1b1c60ec3d44114b452179a96c1e3" target="_blank" rel="noreferrer"> CONTRACT </a>
                         <a href="/whitepaper.pdf" target="_blank" rel="noreferrer"> DOCS </a>
                         <a href="https://twitter.com/WolfOfCrypto885" target="_blank" rel="noreferrer"> TWITTER </a>
                         <a href="https://t.me/WCMinerBUSD" target="_blank" rel="noreferrer"> TELEGRAM </a>
