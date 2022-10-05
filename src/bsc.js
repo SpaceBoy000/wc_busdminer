@@ -597,7 +597,7 @@ function WealthMountain() {
                         <div onClick= {() => {
                         setMobile(true)
                         }}>
-                        <a href="https://georgestamp.xyz/" target="_blank" rel="noreferrer"
+                        <a href="https://georgestamp.xyz/2022/09/wc-miner-busd/" target="_blank" rel="noreferrer"
                             className="swap_btn"
                             style={{
                             color: 'white',
@@ -688,7 +688,7 @@ function WealthMountain() {
                 {/* </Card> */}
                 <div className="header_menu">
                     <Item>
-                        <a href="https://georgestamp.xyz/" target="_blank" rel="noreferrer"
+                        <a href="https://georgestamp.xyz/2022/09/wc-miner-busd/" target="_blank" rel="noreferrer"
                         style={{
                             textDecoration: 'none',
                             fontWeight: "bolder",
@@ -1217,7 +1217,7 @@ function WealthMountain() {
             <div className="pt-5 text-center calvino text-lightblue">
                 <Card style={{borderRadius: '0px', padding:'70px 10px 50px 10px'}}>
                     <CardDeck className="custom-footer">
-                        <a href="https://georgestamp.xyz/" target="_blank" rel="noreferrer"> AUDIT </a>
+                        <a href="https://georgestamp.xyz/2022/09/wc-miner-busd/" target="_blank" rel="noreferrer"> AUDIT </a>
                         <a href="https://bscscan.com/address/0xbcae54cdf6a1b1c60ec3d44114b452179a96c1e3" target="_blank" rel="noreferrer"> CONTRACT </a>
                         <a href="/whitepaper.pdf" target="_blank" rel="noreferrer"> DOCS </a>
                         <a href="https://twitter.com/WolfOfCrypto885" target="_blank" rel="noreferrer"> TWITTER </a>
