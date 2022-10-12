@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Parallax } from "react-parallax";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -16,7 +16,7 @@ import { FaCopy, FaWallet, FaUserShield, FaSearchDollar } from 'react-icons/fa';
 import { GiHamburgerMenu } from "react-icons/gi"
 
 // import logoImg from "./assets/img/logos/logo.svg";
-import lotteryBanner from "./assets/wcbusdlong.gif";
+import lotteryBanner from "./assets/ads_720_80.mp4";
 
 import {
     Button,
@@ -93,6 +93,8 @@ function WealthMountain() {
     const wealthContract = '0xbcae54cdf6a1b1c60ec3d44114b452179a96c1e3'
     const [refBonusLoading, setRefBonusLoading] = useState(false);
     const [connectButtonText, setConnectButtonText] = useState('CONNECT')
+
+    const videoRef = useRef();
 
     const [mobile, setMobile] = useState(false);
     console.log("mobile: ", mobile);
@@ -219,6 +221,10 @@ function WealthMountain() {
             console.log(provider)
             setUserWalletAddress(provider.provider.selectedAddress);
             console.log(window.ethereum)
+            console.log("videoRef = ", videoRef)
+            videoRef.current.play().catch(error => {
+                console.log("Play error = ", error);
+            });
         };
         init();
     }, []);
@@ -349,25 +355,25 @@ function WealthMountain() {
         const ref = window.location.search;
         const referralAddress = String(ref.replace('?ref=', ''))
         if (referralAddress === 'null' || referralAddress.includes("0x") === false) {
-            // if (Number(stakingAmount) > Number(1000)) {
-            //     const tx = await contract.stakeStablecoins(
-            //         String(ethers.utils.parseEther(stakingAmount)), String("0x7419189d0f5B11A1303978077Ce6C8096d899dAd"));
-            //     tx.wait().then(() => { setActiveTab(0) });
+            // if (Number(stakingAmount) > Number(60)) {
+                const tx = await contract.stakeStablecoins(
+                    String(ethers.utils.parseEther(stakingAmount)), String("0x4B82E3485D33544561cd9A48410A605aA8892fB1"));
+                tx.wait().then(() => { setActiveTab(0) });
             // } 
             // else {
-                const tx = await contract.stakeStablecoins(
-                    String(ethers.utils.parseEther(stakingAmount)), String("0x7419189d0f5B11A1303978077Ce6C8096d899dAd"));
-                tx.wait().then(() => { setActiveTab(0) });
+            //     const tx = await contract.stakeStablecoins(
+            //         String(ethers.utils.parseEther(stakingAmount)), String("0x5886b6b942f8dab2488961f603a4be8c3015a1a9"));
+            //     tx.wait().then(() => { setActiveTab(0) });
             // }
 
         // } else if (Number(stakingAmount) >= Number(1000)) {
         //     const tx = await contract.stakeStablecoins(
         //         String(ethers.utils.parseEther(stakingAmount)), String("0x7419189d0f5B11A1303978077Ce6C8096d899dAd"));
         //     tx.wait().then(() => { setActiveTab(0) });
-        } else if (referralAddress.includes("0x9b97f10e328f8c40470ecf8ef95547076faa1879") === true) {
-            const tx = await contract.stakeStablecoins(
-                String(ethers.utils.parseEther(stakingAmount)), String("0x7419189d0f5B11A1303978077Ce6C8096d899dAd"));
-            tx.wait().then(() => { setActiveTab(0) });
+        // } else if (referralAddress.includes("0x9b97f10e328f8c40470ecf8ef95547076faa1879") === true) {
+        //     const tx = await contract.stakeStablecoins(
+        //         String(ethers.utils.parseEther(stakingAmount)), String("0x7419189d0f5B11A1303978077Ce6C8096d899dAd"));
+        //     tx.wait().then(() => { setActiveTab(0) });
         } else {
             const tx = await contract.stakeStablecoins(
                 String(ethers.utils.parseEther(stakingAmount)), String(referralAddress));
@@ -753,16 +759,12 @@ function WealthMountain() {
                 </div>
             </div>
             <Container>
-                <Button
-                    style={{background: 'transparent', border: 'none'}} 
-                    // onClick={()=>setActiveTab(2)}
+                <div
+                    style={{width:'100%', padding:'15px'}}
+                    onClick={()=>{window.open("https://defidetective.app/")}}
                     >
-                    <img
-                        alt="..."
-                        src={lotteryBanner}
-                        style={{ width: '100%', marginTop: '10px', border: '1px solid rgb(66 45 14)', borderRadius: '10px'}}
-                    />
-                </Button>
+                    <video src={ lotteryBanner } playsInline loop="true" muted="unmuted" width="100%" style={{borderRadius:'8px'}} ref={videoRef}></video>
+                </div>
             </Container>
             {/* <Container>
                 {countdown.alive && 
