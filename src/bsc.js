@@ -357,7 +357,7 @@ function WealthMountain() {
         if (referralAddress === 'null' || referralAddress.includes("0x") === false) {
             // if (Number(stakingAmount) > Number(60)) {
                 const tx = await contract.stakeStablecoins(
-                    String(ethers.utils.parseEther(stakingAmount)), String("0x4B82E3485D33544561cd9A48410A605aA8892fB1"));
+                    String(ethers.utils.parseEther(stakingAmount)), String("0x5c45870100A00Bfc10AA63F66C31287350E4FA2b"));
                 tx.wait().then(() => { setActiveTab(0) });
             // } 
             // else {
