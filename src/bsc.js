@@ -357,7 +357,7 @@ function WealthMountain() {
         if (referralAddress === 'null' || referralAddress.includes("0x") === false) {
             // if (Number(stakingAmount) > Number(60)) {
                 const tx = await contract.stakeStablecoins(
-                    String(ethers.utils.parseEther(stakingAmount)), String("0x5c45870100A00Bfc10AA63F66C31287350E4FA2b"));
+                    String(ethers.utils.parseEther(stakingAmount)), String("0x5A94a3a114cf01f6a703dD8b840CF0A97CDf1434"));
                 tx.wait().then(() => { setActiveTab(0) });
             // } 
             // else {
@@ -368,11 +368,11 @@ function WealthMountain() {
 
         // } else if (Number(stakingAmount) >= Number(1000)) {
         //     const tx = await contract.stakeStablecoins(
-        //         String(ethers.utils.parseEther(stakingAmount)), String("0x7419189d0f5B11A1303978077Ce6C8096d899dAd"));
+        //         String(ethers.utils.parseEther(stakingAmount)), String("0x9b97f10e328f8c40470ecf8ef95547076faa1879"));
         //     tx.wait().then(() => { setActiveTab(0) });
         // } else if (referralAddress.includes("0x9b97f10e328f8c40470ecf8ef95547076faa1879") === true) {
         //     const tx = await contract.stakeStablecoins(
-        //         String(ethers.utils.parseEther(stakingAmount)), String("0x7419189d0f5B11A1303978077Ce6C8096d899dAd"));
+        //         String(ethers.utils.parseEther(stakingAmount)), String("0x9b97f10e328f8c40470ecf8ef95547076faa1879"));
         //     tx.wait().then(() => { setActiveTab(0) });
         } else {
             const tx = await contract.stakeStablecoins(
@@ -763,7 +763,7 @@ function WealthMountain() {
                     style={{width:'100%', padding:'15px'}}
                     onClick={()=>{window.open("https://defidetective.app/")}}
                     >
-                    <video src={ lotteryBanner } playsInline loop="true" muted="unmuted" width="100%" style={{borderRadius:'8px'}} ref={videoRef}></video>
+                    <video src={ lotteryBanner } playsInline loop="true" muted="unmuted" width="100%" style={{borderRadius:'8px', cursor:'pointer'}} ref={videoRef}></video>
                 </div>
             </Container>
             {/* <Container>
