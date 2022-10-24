@@ -17359,3 +17359,15 @@ td.rdtYear:hover {
 .mobile_btn {
   display: none;
 }
+
+.chart1 {
+  width: 500px;
+  /* height: 420px; */
+  background-color: white;
+  border-radius: 12px;
+}
+
+.chart1 tspan {
+  color: red;
+  background: red;
+}
