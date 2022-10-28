@@ -946,7 +946,6 @@ function WealthMountain() {
                                     }}
                                 >
                                     <span> Whitepaper </span>
-                                    {/* <TwitterIcon/> */}
                                 </a>
                             </div>
                             <div onClick={() => {
