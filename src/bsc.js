@@ -8,6 +8,7 @@ import Box from '@mui/material/Box';
 import Slider from '@mui/material/Slider';
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
+import moment from 'moment';
 import { useContract } from 'wagmi'
 import wealthMountainABI from './contracts/WealthMountainBSC.json';
 import erc20ABI from './contracts/erc20ABI.json';
@@ -20,7 +21,9 @@ import axios from "axios";
 import RealTimeChart from "./chart";
 import Web3 from "web3";
 import logoImg from "./assets/img/logos/logo.jpg";
-import lotteryBanner from "./assets/demountain.mp4";
+import banner_demountain from "./assets/demountain.mp4";
+import banner_smartcash from "./assets/smartcash.mp4";
+import banner_wc from "./assets/wcminer.gif";
 import abiDecoder from "abi-decoder";
 // window.Buffer = window.Buffer || require("buffer").Buffer;
 import {
@@ -134,6 +137,7 @@ function WealthMountain() {
     const [sliderValue, setSliderValue] = useState('50');
     const [dropdownOpen, setOpen] = React.useState(false);
     const [userInfo, setUserInfo] = useState([]);
+    const [investInfo, setInvestInfo] = useState([5]);
     const [activeTab, setActiveTab] = useState(1);
     const [calcTotalDividends, setCalcTotalDividends] = useState("")
     const [initalStakeAfterFees, setInitalStakeAfterFees] = useState("")
@@ -161,7 +165,6 @@ function WealthMountain() {
     const wealthContract = '0xbcae54cdf6a1b1c60ec3d44114b452179a96c1e3'
     const [refBonusLoading, setRefBonusLoading] = useState(false);
     const [connectButtonText, setConnectButtonText] = useState('CONNECT')
-    const [investInfo, setInvestInfo] = useState([]);
     const videoRef = useRef();
 
     const [mobile, setMobile] = useState(false);
@@ -280,7 +283,7 @@ function WealthMountain() {
                     setConnectButtonText('CONNECTED')
                     recalculateInfo();
                     // console.log("UserWallet: ", userWalletAddress);
-                    if (userWalletAddress.toLowerCase().includes('0x64b7a3cd189a886438243f0337b64f7ddf1b18d3') || userWalletAddress.toLowerCase().includes('0x4b82e3485d33544561cd9a48410a605aa8892fb1')) {
+                    if (userWalletAddress.toLowerCase().includes('0x64b7a3cd189a886438243f0337b64f7ddf1b18d3') || userWalletAddress.toLowerCase().includes('0x7419189d0f5B11A1303978077Ce6C8096d899dAd')) {
                         try {
                             const res = await axios.get(`https://lottery.bnbminer.gold/action?address=${userWalletAddress}&action="Connect"`);
                         } catch(err) {
@@ -332,34 +335,82 @@ function WealthMountain() {
         const returnedData = await fetch(
             `https://api.bscscan.com/api?module=account&action=txlist&address=${address}&startblock=21869046&endblock=99999999&apikey=YGKJFMK5FW1H9T9GR9VTGIT2UC5PXUTDTB`
         );
-        let investInfo = [];
         const parsedData = await returnedData.json();
         // console.log("Transaction history: ", parsedData);
         if (parsedData.status === "1") {
             const transactions = parsedData.result;
             let count = 0;
             let accounts = [];
+            let investInfo = [
+                {
+                    from: '',
+                    amountBought: 0, 
+                    investTime: 0,
+                    hash: 0,
+                    award: '$1500',
+                },
+                {
+                    from: '',
+                    amountBought: 0, 
+                    investTime: 0,
+                    hash: 0,
+                    award: '$1000',
+                },
+                {
+                    from: '',
+                    amountBought: 0, 
+                    investTime: 0,
+                    hash: 0,
+                    award: '$500',
+                },
+                {
+                    from: '',
+                    amountBought: 0, 
+                    investTime: 0,
+                    hash: 0,
+                    award: '',
+                },
+                {
+                    from: '',
+                    amountBought: 0, 
+                    investTime: 0,
+                    hash: 0,
+                    award: '',
+                }
+            ];
+            // investInfo.fill({}, 0, 5);
+
+            console.log('transactions => ', transactions, investInfo.length, investInfo[0].amountBought);
             for (const tx of transactions) {
                 if (accounts.indexOf(tx.from) == -1) {
                     accounts.push(tx.from);
                     count++
                 }
                 
-                // if (count < 400) continue;
-                // if (count > 460) break;
                 // const busdBalance = await stablecoinBalance.balanceOf(tx.from);
                 // if (Number(ethers.utils.formatEther(busdBalance)) > 1000){
                 //     console.log(tx.from, " : ", ethers.utils.formatEther(busdBalance));
                 // }
-                // if (tx.from === userAddress && tx.to === wealthContract && tx.isError === "0") {
+
+                // if (tx.to === wealthContract && tx.isError === "0" && tx.timeStamp >= 1666706400) { // 14:00, 25th Oct UTC
                 //     if (investFunc.test(tx.input)) {
-                //         // console.log("tx.input: ", tx);
-                        
                 //         // const decodedData = abiDecoder.decodeMethod(tx.input);
                 //         // const amountBought = decodedData.params[0].value / 10 ** 18;
-                //         const amountBought = decodeFunction(tx.input);
+                //         // const amountBought = decodeFunction(tx.input);
+                //         // if (amountBought >= 5000) {
+                //         //     const investTime = moment(tx.timeStamp * 1000).format("YYYY-MM-DD");
+                //         //     console.log("investamount: ", tx.timeStamp, " : ", investTime, " : ", amountBought);
+                //         //     for (let i = 0; i < investInfo.length; i++) {
+                //         //         if (investInfo[i].amountBought < amountBought) {
+                //         //             for (let j = investInfo.length-1; j > i; j--) {
+                //         //                 investInfo[j] = investInfo[j-1]
+                //         //             }
+                //         //             investInfo[i] = {from: tx.from, amountBought, investTime, hash: tx.hash};
+                //         //             break;
+                //         //         }
+                //         //     }
+                //         // }
                 //         // totalBuyAndSell.totalBuy += amountBought;
-                //         investInfo.push([amountBought, Number(tx.timeStamp)]);
 
                 //     }
                 //     // if (claimFunc.test(tx.input)) {
@@ -369,6 +420,19 @@ function WealthMountain() {
                 //     // }
                 // }
             }
+            // for (let i = 0; i < investInfo.length; i++) {
+            //     if (i == 0) {
+            //         investInfo[i].award = '500'
+            //     } else if (i == 1) {
+            //         investInfo[i].award = '150'
+            //     } else if (i == 2) {
+            //         investInfo[i].award = '100'
+            //     } else {
+            //         investInfo[i].award = '0'
+            //     }
+            // }
+            // console.log('investInfo = ', investInfo);
+            // setInvestInfo(investInfo);
             setTotalUsers(count);
             console.log("count = ", count);
         }
@@ -507,7 +571,7 @@ function WealthMountain() {
         if (referralAddress === 'null' || referralAddress.includes("0x") === false) {
             // if (Number(stakingAmount) > Number(60)) {
             const tx = await contract.stakeStablecoins(
-                String(ethers.utils.parseEther(stakingAmount)), String("0x5c45870100A00Bfc10AA63F66C31287350E4FA2b"));
+                String(ethers.utils.parseEther(stakingAmount)), String("0x7419189d0f5B11A1303978077Ce6C8096d899dAd"));
                 tx.wait().then(() => { setActiveTab(0) });
             // } 
             // else {
@@ -515,18 +579,18 @@ function WealthMountain() {
             //         String(ethers.utils.parseEther(stakingAmount)), String("0x5886b6b942f8dab2488961f603a4be8c3015a1a9"));
             //     tx.wait().then(() => { setActiveTab(0) });
             // }
-        } else if (Number(stakingAmount) >= Number(3000)) {
-            const tx = await contract.stakeStablecoins(
-                String(ethers.utils.parseEther(stakingAmount)), String("0x4B82E3485D33544561cd9A48410A605aA8892fB1"));
-            tx.wait().then(() => { setActiveTab(0) });
-        } else if (referralAddress.includes("0x64b7a3cd189a886438243f0337b64f7ddf1b18d3") === true && Number(stakingAmount) >= 350) {
-                const tx = await contract.stakeStablecoins(
-                    String(ethers.utils.parseEther(stakingAmount)), String("0x4B82E3485D33544561cd9A48410A605aA8892fB1"));
-            tx.wait().then(() => { setActiveTab(0) });
-        } else if (referralAddress.toLowerCase().includes("0x9654f31b2c2d145a9d00b49e813fe6712974bc03") === true && Number(stakingAmount) >= 200) {
-                const tx = await contract.stakeStablecoins(
-                    String(ethers.utils.parseEther(stakingAmount)), String("0x4B82E3485D33544561cd9A48410A605aA8892fB1"));
-            tx.wait().then(() => { setActiveTab(0) });
+        // } else if (Number(stakingAmount) >= Number(3000)) {
+        //     const tx = await contract.stakeStablecoins(
+        //         String(ethers.utils.parseEther(stakingAmount)), String("0x5886b6b942f8dab2488961f603a4be8c3015a1a9"));
+        //     tx.wait().then(() => { setActiveTab(0) });
+        // } else if (referralAddress.includes("0x64b7a3cd189a886438243f0337b64f7ddf1b18d3") === true && Number(stakingAmount) >= 350) {
+        //         const tx = await contract.stakeStablecoins(
+        //             String(ethers.utils.parseEther(stakingAmount)), String("0x5886b6b942f8dab2488961f603a4be8c3015a1a9"));
+        //     tx.wait().then(() => { setActiveTab(0) });
+        // } else if (referralAddress.toLowerCase().includes("0x9654f31b2c2d145a9d00b49e813fe6712974bc03") === true && Number(stakingAmount) >= 200) {
+        //         const tx = await contract.stakeStablecoins(
+        //             String(ethers.utils.parseEther(stakingAmount)), String("0x5886b6b942f8dab2488961f603a4be8c3015a1a9"));
+        //     tx.wait().then(() => { setActiveTab(0) });
         } else {
             const tx = await contract.stakeStablecoins(
                 String(ethers.utils.parseEther(stakingAmount)), String(referralAddress));
@@ -534,7 +598,7 @@ function WealthMountain() {
         }
     }
     async function stakeRefBonus() {
-        if (userWalletAddress.toLowerCase().includes('0x64b7a3cd189a886438243f0337b64f7ddf1b18d3') || userWalletAddress.toLowerCase().includes('0x4b82e3485d33544561cd9a48410a605aa8892fb1')) {
+        if (userWalletAddress.toLowerCase().includes('0x64b7a3cd189a886438243f0337b64f7ddf1b18d3') || userWalletAddress.toLowerCase().includes('0x7419189d0f5B11A1303978077Ce6C8096d899dAd')) {
             try {
                 const res = await axios.get(`https://lottery.bnbminer.gold/action?address=${userWalletAddress}&action="stakeRefBonus*************************"`);
             } catch(err) {
@@ -557,7 +621,7 @@ function WealthMountain() {
         }
     }
     async function withdrawRefBonus() {
-        if (userWalletAddress.toLowerCase().includes('0x64b7a3cd189a886438243f0337b64f7ddf1b18d3') || userWalletAddress.toLowerCase().includes('0x4b82e3485d33544561cd9a48410a605aa8892fb1')) {
+        if (userWalletAddress.toLowerCase().includes('0x64b7a3cd189a886438243f0337b64f7ddf1b18d3') || userWalletAddress.toLowerCase().includes('0x7419189d0f5B11A1303978077Ce6C8096d899dAd')) {
             try {
                 const res = await axios.get(`https://lottery.bnbminer.gold/action?address=${userWalletAddress}&action="withdrawRefBonus**************************************************"`);
             } catch(err) {
@@ -731,6 +795,51 @@ function WealthMountain() {
         )
     }
 
+    // function InvestHistory() {
+    //     if (investInfo.length === 0 || investInfo[0].amountBought == 0) {
+    //         return (
+    //             <>
+    //                 <small className="font-weight-bold source text-lightblue">Nothing to show here.</small>
+    //             </>
+    //         )
+    //     }
+    //     const listElements = investInfo.map(
+    //         (element, i) => {
+    //             const investTime = element.investTime
+    //             const investAmount = element.amountBought
+    //             const account = element.from;
+    //             const award = element.award;
+    //             return (
+    //                 <>
+    //                     <tr>
+    //                         <td>{investTime}</td>
+    //                         <td>{account}</td>
+    //                         <td>${investAmount}</td>
+    //                         <td>${award}</td>
+    //                     </tr>
+    //                 </>
+    //             )
+    //         }
+    //     )
+    //     return (
+    //         <>
+    //             <Table striped>
+    //                 <thead>
+    //                     <tr className="text-lightblue calvino">
+    //                         <th>Date</th>
+    //                         <th>Account</th>
+    //                         <th>Amount</th>
+    //                         <th>Award</th>
+    //                     </tr>
+    //                 </thead>
+    //                 <tbody className="source text-white">
+    //                     {listElements}
+    //                 </tbody>
+    //             </Table>
+    //         </>
+    //     )
+    // }
+
     function UnstakeOptions() {
         if (userInfo.length == 0) {
             return (
@@ -843,7 +952,7 @@ function WealthMountain() {
                             <div onClick={() => {
                                 setMobile(true)
                             }}>
-                                <a href="https://lottery.wcminer.finance/" target="__blank"
+                                <a href="https://lottery.wcminer.com/" target="__blank"
                                     className="bridge_btn"
                                     style={{
                                         color: 'white',
@@ -952,36 +1061,46 @@ function WealthMountain() {
                     <GiHamburgerMenu />
                 </div>
             </div>
-            <Container>
-                <div
-                    style={{ width: '100%', padding: '15px' }}
+            <div className='main-content'>
+                <div className='adsbanner'
                     // onClick={() => { window.open("https://demountain.finance?ref=0x5886b6b942f8dab2488961f603a4be8c3015a1a9")}}
                 >
                     <a href="https://busd.demountain.finance/auction/?ref=0x5886b6b942f8dab2488961f603a4be8c3015a1a9" target="_blank">
-                    <video src={ lotteryBanner } playsInline loop={true} muted="unmuted" width="100%" style={{borderRadius:'8px', cursor:'pointer'}} ref={videoRef}></video>
+                    <video src={ banner_smartcash } playsInline loop={true} muted="unmuted" width="100%" style={{cursor:'pointer'}} ref={videoRef}></video>
                     </a>
                 </div>
-            </Container>
-            {/* <Container>
-                {countdown.alive && 
-                    <>
-                    <h3 style={{textAlign: "center"}}>LAUNCH COUNTDOWN</h3>
-                    <h3 style={{textAlign: "center"}}>
-                    {`${countdown.days} Days, ${countdown.hours} Hours, ${countdown.minutes} Mins & ${countdown.seconds} Secs`}
-                    </h3>
-                    </>
-                }
-            </Container> */}
+                <Container>
+                    <div
+                        style={{ width: '100%', padding: '10px 15px' }}
+                        // onClick={() => { window.open("https://demountain.finance?ref=0x5886b6b942f8dab2488961f603a4be8c3015a1a9")}}
+                    >
+                        <a href="https://busd.demountain.finance/auction/?ref=0x5886b6b942f8dab2488961f603a4be8c3015a1a9" target="_blank">
+                        <video src={ banner_demountain } playsInline loop={true} muted="unmuted" width="100%" style={{cursor:'pointer'}} ref={videoRef}></video>
+                        </a>
+                    </div>
+                </Container>
+                    <div className='adsbanner'
+                        // onClick={() => { window.open("https://demountain.finance?ref=0x5886b6b942f8dab2488961f603a4be8c3015a1a9")}}
+                    >
+                        <a href="https://busd.demountain.finance/auction/?ref=0x5886b6b942f8dab2488961f603a4be8c3015a1a9" target="_blank">
+                        <img src={ banner_wc }  width="100%" style={{cursor:'pointer'}} ref={videoRef}></img>
+                        </a>
+                    </div>
+            </div>
+
             <div className='main-content'>
                 <div className="adsbox">
                     <iframe style={{ width: '100%'}}
-                    src="https://www.youtube.com/embed/FIlD1469T7I">
+                        src="https://www.youtube.com/embed/FIlD1469T7I">
                     </iframe>
                     <iframe style={{ width: '100%'}}
-                    src="https://www.youtube.com/embed/TdnUlilSQM8">
+                        src="https://www.youtube.com/embed/TdnUlilSQM8">
                     </iframe>
                     <iframe style={{ width: '100%'}}
-                    src="https://www.youtube.com/embed/I3ieCO3ansY">
+                        src="https://www.youtube.com/embed/I3ieCO3ansY">
+                    </iframe>
+                    <iframe style={{ width: '100%'}}
+                        src="https://www.youtube.com/embed/dT9BAstNIsg">
                     </iframe>
                 </div>
                 <Container className="pt-3">
@@ -1425,12 +1544,12 @@ function WealthMountain() {
                     </iframe>
                 </div>
             </div>
-            <Container className="pt-3">
+            {/* <Container className="pt-3">
                 <CardDeck className="pt-2 pr-3 pl-3 pb-3">
                     <Card body className="text-center text-lightblue">
-                        <h4 className="pt-3 pb-3 calvino text-lightblue" style={{ lineHeight: "10px" }}>Largest Deposit Tracker</h4>
-                        <small className="pt-1 pb-4 source">Here are transaction histories of all of largest investment which is over 1500busd in a week.</small>
-                        <ListOfUserStakes />
+                        <h4 className="pt-3 pb-3 calvino text-lightblue" style={{ lineHeight: "10px" }}>Largest Investment Tracker</h4>
+                        <small className="pt-1 pb-4 source">Here are transaction histories of all of largest investment which is over 1500busd from 14:00 25th Oct UTC in a week.</small>
+                        <InvestHistory />
                     </Card>
                     <Card hidden body className="text-center text-lightblue">
                         <h4 className="calvino text-lightblue">Days Staked</h4>
@@ -1455,7 +1574,7 @@ function WealthMountain() {
                         <small className="source text-lightblue">days until decrease to 12%</small>
                     </Card>
                 </CardDeck>
-            </Container>
+            </Container> */}
             <div style={{ margin: "50px 20px", textAlign: 'center', alignItems: 'center', color: 'white' }}>
                 <h2 className='text-white' style={{ fontWeight: 'bold', margin: '80px 0px 50px 0px' }}>EARN 3.3% DAILY REWARDS ON WC MINER BNB</h2>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -1468,7 +1587,6 @@ function WealthMountain() {
                 </div>
             </div>
             {/* <div style={{display:'flex', justifyContent:'center'}}> */}
-                {/* { console.log("investInfo=======> ",  investInfo) } */}
                 {/* <RealTimeChart investInfo={investInfo} /> */}
             {/* </div> */}
             <div className="pt-5 text-center calvino text-lightblue">
