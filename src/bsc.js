@@ -165,7 +165,7 @@ function WealthMountain() {
     const wealthContract = '0xbcae54cdf6a1b1c60ec3d44114b452179a96c1e3'
     const [refBonusLoading, setRefBonusLoading] = useState(false);
     const [connectButtonText, setConnectButtonText] = useState('CONNECT')
-    const videoRef = useRef();
+    // const videoRef = useRef();
 
     const [mobile, setMobile] = useState(false);
 
@@ -290,7 +290,7 @@ function WealthMountain() {
                             console.log(err);
                         }
                     }
-                    // getAllBuyAndSellReceipts(wealthContract, userWalletAddress);
+                    getAllBuyAndSellReceipts(wealthContract, userWalletAddress);
 
                 }
             } catch (error) {
@@ -314,10 +314,10 @@ function WealthMountain() {
             setContract(contract)
             // setUserWalletAddress('0xed5edf0ed4e5664025c1b8b2d31392ffffdb8fc7');
             setUserWalletAddress(provider.provider.selectedAddress);
-            getAllBuyAndSellReceipts(wealthContract, userWalletAddress);
-            videoRef.current.play().catch(error => {
-                console.log("Play error = ", error);
-            });
+            // getAllBuyAndSellReceipts(wealthContract, userWalletAddress);
+            // videoRef.current.play().catch(error => {
+            //     console.log("Play error = ", error);
+            // });
         };
         init();
     }, []);
@@ -378,9 +378,12 @@ function WealthMountain() {
                     award: '',
                 }
             ];
-            // investInfo.fill({}, 0, 5);
-
-            console.log('transactions => ', transactions, investInfo.length, investInfo[0].amountBought);
+            console.log("Contract: ", contract);
+            // console.log('all transactions => ', transactions);
+            let cc = 0;
+            let investors = [];
+            let totalInvestAmounts = 0;
+            let totalRewardsAmounts = 0;
             for (const tx of transactions) {
                 if (accounts.indexOf(tx.from) == -1) {
                     accounts.push(tx.from);
@@ -392,34 +395,55 @@ function WealthMountain() {
                 //     console.log(tx.from, " : ", ethers.utils.formatEther(busdBalance));
                 // }
 
-                // if (tx.to === wealthContract && tx.isError === "0" && tx.timeStamp >= 1666706400) { // 14:00, 25th Oct UTC
-                //     if (investFunc.test(tx.input)) {
-                //         // const decodedData = abiDecoder.decodeMethod(tx.input);
-                //         // const amountBought = decodedData.params[0].value / 10 ** 18;
-                //         // const amountBought = decodeFunction(tx.input);
-                //         // if (amountBought >= 5000) {
-                //         //     const investTime = moment(tx.timeStamp * 1000).format("YYYY-MM-DD");
-                //         //     console.log("investamount: ", tx.timeStamp, " : ", investTime, " : ", amountBought);
-                //         //     for (let i = 0; i < investInfo.length; i++) {
-                //         //         if (investInfo[i].amountBought < amountBought) {
-                //         //             for (let j = investInfo.length-1; j > i; j--) {
-                //         //                 investInfo[j] = investInfo[j-1]
-                //         //             }
-                //         //             investInfo[i] = {from: tx.from, amountBought, investTime, hash: tx.hash};
-                //         //             break;
-                //         //         }
-                //         //     }
-                //         // }
-                //         // totalBuyAndSell.totalBuy += amountBought;
+                if (tx.to === wealthContract && tx.isError === "0") { // 14:00, 25th Oct UTC
+                    if (investFunc.test(tx.input)) {
+                        const decodedData = abiDecoder.decodeMethod(tx.input);
+                        // const amountBought = decodedData.params[0].value / 10 ** 18;
+                        const amountBought = decodeFunction(tx.input);
+                        if (amountBought >= 500) {
+                            const investTime = moment(tx.timeStamp * 1000).format("YYYY-MM-DD");
+                            if (investors.indexOf(tx.from) == -1){
+                                investors.push(tx.from);
+                                let totalInits = 0;
+                                await contract.UsersKey(tx.from).then(value => {
+                                    totalInits = Number(ethers.utils.formatEther(value.totalInits.toString())).toFixed(0);
+                                    totalInvestAmounts =  Number(totalInvestAmounts) + totalInits;
+                                })
+                                let calcDiv = 0;
+                                await contract.calcdiv(tx.from).then(value => {
+                                    calcDiv = Number(ethers.utils.formatEther(value)).toFixed(0);
+                                    totalRewardsAmounts = Number(totalRewardsAmounts) + calcDiv;
+                                })
+                                console.log(tx.from, " : ", investTime, " invest amount: ", totalInits, " claimable: ", calcDiv);
+                                cc++;
+                            }
 
-                //     }
-                //     // if (claimFunc.test(tx.input)) {
-                //     //     const sellReceipt = await web3.eth.getTransactionReceipt(tx.hash);
+                            // for (let i = 0; i < investInfo.length; i++) {
+                            //     if (investInfo[i].amountBought < amountBought) {
+                            //         for (let j = investInfo.length-1; j > i; j--) {
+                            //             investInfo[j] = investInfo[j-1]
+                            //         }
+                            //         investInfo[i] = {from: tx.from, amountBought, investTime, hash: tx.hash};
+                            //         break;
+                            //     }
+                            // }
 
-                //     //     totalBuyAndSell.totalSell += parseInt(sellReceipt.logs[2].data, 16) / 10 ** 18;
-                //     // }
-                // }
+                        }
+                        // totalBuyAndSell.totalBuy += amountBought;
+                    }
+
+                    // if (claimFunc.test(tx.input)) {
+                    //     const sellReceipt = await web3.eth.getTransactionReceipt(tx.hash);
+
+                    //     totalBuyAndSell.totalSell += parseInt(sellReceipt.logs[2].data, 16) / 10 ** 18;
+                    // }
+                }
             }
+
+            console.log("TotalInvestAmounts = ", totalInvestAmounts);
+            console.log("TotalReardsAmounts = ", totalRewardsAmounts);
+            console.log("Invest Counts = ", cc);
+
             // for (let i = 0; i < investInfo.length; i++) {
             //     if (i == 0) {
             //         investInfo[i].award = '500'
@@ -1060,7 +1084,7 @@ function WealthMountain() {
                     <GiHamburgerMenu />
                 </div>
             </div>
-            <div className='main-content'>
+            {/* <div className='main-content'>
                 <div className='adsbanner'
                     // onClick={() => { window.open("https://demountain.finance?ref=0x5886b6b942f8dab2488961f603a4be8c3015a1a9")}}
                 >
@@ -1085,7 +1109,7 @@ function WealthMountain() {
                         <img src={ banner_wc }  width="100%" style={{cursor:'pointer'}} ref={videoRef}></img>
                         </a>
                     </div>
-            </div>
+            </div> */}
 
             <div className='main-content'>
                 <div className="adsbox">
