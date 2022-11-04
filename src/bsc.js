@@ -73,43 +73,7 @@ const web3 = new Web3(
     new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org/")
 );
 
-let contractAbi = [
-    {
-        inputs: [
-            {
-                internalType: "uint256",
-                name: "amtx",
-                type: "uint256"
-            },
-            {
-                internalType: "address",
-                name: "ref",
-                type: "address"
-            }
-        ],
-        name: "stakeStablecoins",
-        outputs: [],
-        stateMutability: "nonpayable",
-        type: "function"
-    },
-    {
-        inputs: [],
-        name: "withdrawDivs",
-        outputs: [
-            {
-                internalType: "uint256",
-                name: "withdrawAmount",
-                type: "uint256"
-            }
-        ],
-        stateMutability: "nonpayable",
-        type: "function"
-    },
-];
 
-console.log(abiDecoder, contractAbi);
-
-// abiDecoder.addABI(contractAbi);
 const abiCoder = require("web3-eth-abi");
 console.log(abiCoder);
 const investFunc = /^0x3acb1a0a/;
