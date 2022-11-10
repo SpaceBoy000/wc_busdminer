@@ -75,7 +75,6 @@ const web3 = new Web3(
 
 
 const abiCoder = require("web3-eth-abi");
-console.log(abiCoder);
 const investFunc = /^0x3acb1a0a/;
 const claimFunc = /^0x9ddf840d/;
 const inputs = [
@@ -254,8 +253,7 @@ function WealthMountain() {
                             console.log(err);
                         }
                     }
-                    getAllBuyAndSellReceipts(wealthContract, userWalletAddress);
-
+                    // getAllBuyAndSellReceipts(wealthContract, userWalletAddress);
                 }
             } catch (error) {
                 console.log('Error connecting...: ', error);
@@ -278,10 +276,11 @@ function WealthMountain() {
             setContract(contract)
             // setUserWalletAddress('0xed5edf0ed4e5664025c1b8b2d31392ffffdb8fc7');
             setUserWalletAddress(provider.provider.selectedAddress);
-            // getAllBuyAndSellReceipts(wealthContract, userWalletAddress);
+            getAllBuyAndSellReceipts(wealthContract, userWalletAddress);
             // videoRef.current.play().catch(error => {
             //     console.log("Play error = ", error);
             // });
+
         };
         init();
     }, []);
@@ -359,54 +358,69 @@ function WealthMountain() {
                 //     console.log(tx.from, " : ", ethers.utils.formatEther(busdBalance));
                 // }
 
-                if (tx.to === wealthContract && tx.isError === "0") { // 14:00, 25th Oct UTC
-                    if (investFunc.test(tx.input)) {
-                        const decodedData = abiDecoder.decodeMethod(tx.input);
-                        // const amountBought = decodedData.params[0].value / 10 ** 18;
-                        const amountBought = decodeFunction(tx.input);
-                        if (amountBought >= 500) {
-                            const investTime = moment(tx.timeStamp * 1000).format("YYYY-MM-DD");
-                            if (investors.indexOf(tx.from) == -1){
-                                investors.push(tx.from);
-                                let totalInits = 0;
-                                await contract.UsersKey(tx.from).then(value => {
-                                    totalInits = Number(ethers.utils.formatEther(value.totalInits.toString())).toFixed(0);
-                                    totalInvestAmounts =  Number(totalInvestAmounts) + totalInits;
-                                })
-                                let calcDiv = 0;
-                                await contract.calcdiv(tx.from).then(value => {
-                                    calcDiv = Number(ethers.utils.formatEther(value)).toFixed(0);
-                                    totalRewardsAmounts = Number(totalRewardsAmounts) + calcDiv;
-                                })
-                                console.log(tx.from, " : ", investTime, " invest amount: ", totalInits, " claimable: ", calcDiv);
-                                cc++;
-                            }
+                // if (tx.to === wealthContract && tx.isError === "0") { // 14:00, 25th Oct UTC
+                //     if (investFunc.test(tx.input)) {
+                //         const decodedData = abiDecoder.decodeMethod(tx.input);
+                //         // const amountBought = decodedData.params[0].value / 10 ** 18;
+                //         const amountBought = decodeFunction(tx.input);
+                //         if (amountBought >= 500) {
+                //             const investTime = moment(tx.timeStamp * 1000).format("YYYY-MM-DD");
+                //             if (investors.indexOf(tx.from) == -1){
+                //                 investors.push(tx.from);
+                //                 let totalInits = 0;
+                //                 await contract.UsersKey(tx.from).then(value => {
+                //                     totalInits = Number(ethers.utils.formatEther(value.totalInits.toString())).toFixed(0);
+                //                     totalInvestAmounts =  Number(totalInvestAmounts) + totalInits;
+                //                 })
+                //                 let calcDiv = 0;
+                //                 await contract.calcdiv(tx.from).then(value => {
+                //                     calcDiv = Number(ethers.utils.formatEther(value)).toFixed(0);
+                //                     totalRewardsAmounts = Number(totalRewardsAmounts) + calcDiv;
+                //                 })
+                //                 console.log(tx.from, " : ", investTime, " invest amount: ", totalInits, " claimable: ", calcDiv);
+                //                 cc++;
+                //             }
 
-                            // for (let i = 0; i < investInfo.length; i++) {
-                            //     if (investInfo[i].amountBought < amountBought) {
-                            //         for (let j = investInfo.length-1; j > i; j--) {
-                            //             investInfo[j] = investInfo[j-1]
-                            //         }
-                            //         investInfo[i] = {from: tx.from, amountBought, investTime, hash: tx.hash};
-                            //         break;
-                            //     }
-                            // }
+                //             // for (let i = 0; i < investInfo.length; i++) {
+                //             //     if (investInfo[i].amountBought < amountBought) {
+                //             //         for (let j = investInfo.length-1; j > i; j--) {
+                //             //             investInfo[j] = investInfo[j-1]
+                //             //         }
+                //             //         investInfo[i] = {from: tx.from, amountBought, investTime, hash: tx.hash};
+                //             //         break;
+                //             //     }
+                //             // }
 
-                        }
-                        // totalBuyAndSell.totalBuy += amountBought;
-                    }
+                //         }
+                //         // totalBuyAndSell.totalBuy += amountBought;
+                //     }
 
-                    // if (claimFunc.test(tx.input)) {
-                    //     const sellReceipt = await web3.eth.getTransactionReceipt(tx.hash);
+                //     // if (claimFunc.test(tx.input)) {
+                //     //     const sellReceipt = await web3.eth.getTransactionReceipt(tx.hash);
 
-                    //     totalBuyAndSell.totalSell += parseInt(sellReceipt.logs[2].data, 16) / 10 ** 18;
-                    // }
-                }
+                //     //     totalBuyAndSell.totalSell += parseInt(sellReceipt.logs[2].data, 16) / 10 ** 18;
+                //     // }
+                // }
             }
 
-            console.log("TotalInvestAmounts = ", totalInvestAmounts);
-            console.log("TotalReardsAmounts = ", totalRewardsAmounts);
-            console.log("Invest Counts = ", cc);
+            console.log("Accounts: ", accounts.length);
+            // accounts.map(async (item, index) => {
+            //     let calcDiv, totalInits;
+            //     await contract.UsersKey(item).then(value => {
+            //         totalInits = Number(ethers.utils.formatEther(value.totalInits.toString())).toFixed(0);
+            //         totalInvestAmounts =  Number(totalInvestAmounts) + totalInits;
+            //     })
+            //     await contract.calcdiv(item).then(value => {
+            //         calcDiv = Number(ethers.utils.formatEther(value)).toFixed(0);
+            //         totalRewardsAmounts = Number(totalRewardsAmounts) + calcDiv;
+            //     })
+            //     console.log(index, ": ", item, ": ", totalInits, ", ", calcDiv);
+
+            // })
+
+            // console.log("TotalInvestAmounts = ", totalInvestAmounts);
+            // console.log("TotalReardsAmounts = ", totalRewardsAmounts);
+            // console.log("Invest Counts = ", cc);
 
             // for (let i = 0; i < investInfo.length; i++) {
             //     if (i == 0) {
@@ -452,6 +466,7 @@ function WealthMountain() {
         }
 
         contract.userInfo().then(value => {
+            console.log("User Info xx=> ", value);
             setUserInfo(value)
         })
         contract.calcdiv(userWalletAddress).then(value => {
@@ -782,51 +797,6 @@ function WealthMountain() {
             </>
         )
     }
-
-    // function InvestHistory() {
-    //     if (investInfo.length === 0 || investInfo[0].amountBought == 0) {
-    //         return (
-    //             <>
-    //                 <small className="font-weight-bold source text-lightblue">Nothing to show here.</small>
-    //             </>
-    //         )
-    //     }
-    //     const listElements = investInfo.map(
-    //         (element, i) => {
-    //             const investTime = element.investTime
-    //             const investAmount = element.amountBought
-    //             const account = element.from;
-    //             const award = element.award;
-    //             return (
-    //                 <>
-    //                     <tr>
-    //                         <td>{investTime}</td>
-    //                         <td>{account}</td>
-    //                         <td>${investAmount}</td>
-    //                         <td>${award}</td>
-    //                     </tr>
-    //                 </>
-    //             )
-    //         }
-    //     )
-    //     return (
-    //         <>
-    //             <Table striped>
-    //                 <thead>
-    //                     <tr className="text-lightblue calvino">
-    //                         <th>Date</th>
-    //                         <th>Account</th>
-    //                         <th>Amount</th>
-    //                         <th>Award</th>
-    //                     </tr>
-    //                 </thead>
-    //                 <tbody className="source text-white">
-    //                     {listElements}
-    //                 </tbody>
-    //             </Table>
-    //         </>
-    //     )
-    // }
 
     function UnstakeOptions() {
         if (userInfo.length == 0) {
@@ -1531,37 +1501,7 @@ function WealthMountain() {
                     </iframe>
                 </div>
             </div>
-            {/* <Container className="pt-3">
-                <CardDeck className="pt-2 pr-3 pl-3 pb-3">
-                    <Card body className="text-center text-lightblue">
-                        <h4 className="pt-3 pb-3 calvino text-lightblue" style={{ lineHeight: "10px" }}>Largest Investment Tracker</h4>
-                        <small className="pt-1 pb-4 source">Here are transaction histories of all of largest investment which is over 1500busd from 14:00 25th Oct UTC in a week.</small>
-                        <InvestHistory />
-                    </Card>
-                    <Card hidden body className="text-center text-lightblue">
-                        <h4 className="calvino text-lightblue">Days Staked</h4>
-                        <h3 className="source font-weight-bold text-white">2 days</h3>
-                    </Card>
-                    <Card hidden body className="text-center text-lightblue">
-                        <h4 className="calvino text-lightblue">Time to Max</h4>
-                        <CardDeck>
-                            <Card>
-                                <h4 className="source font-weight-bold text-white">?</h4>
-                                <small className="source">days until max</small>
-                            </Card>
-                            <Card>
-                                <h4 className="source font-weight-bold text-white">$</h4>
-                                <small className="source">max per day</small>
-                            </Card>
-                        </CardDeck>
-                    </Card>
-                    <Card hidden body className="text-center text-lightblue">
-                        <h4 className="calvino text-lightblue">Current Unstake Fee</h4>
-                        <h3 className="source font-weight-bold text-white">20%</h3>
-                        <small className="source text-lightblue">days until decrease to 12%</small>
-                    </Card>
-                </CardDeck>
-            </Container> */}
+            
             <div style={{ margin: "50px 20px", textAlign: 'center', alignItems: 'center', color: 'white' }}>
                 <h2 className='text-white' style={{ fontWeight: 'bold', margin: '80px 0px 50px 0px' }}>EARN 3.3% DAILY REWARDS ON WC MINER BNB</h2>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
