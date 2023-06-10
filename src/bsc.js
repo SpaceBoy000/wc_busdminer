@@ -17,7 +17,7 @@ import { FaCopy, FaWallet, FaUserShield, FaSearchDollar } from 'react-icons/fa';
 import { GiHamburgerMenu } from "react-icons/gi"
 import axios from "axios";
 import RealTimeChart from "./chart";
-// import Web3 from "web3";
+import Web3 from "web3";
 import logoImg from "./assets/logo.png";
 
 import abiDecoder from "abi-decoder";
@@ -64,9 +64,9 @@ const Item = styled('div')(({ theme }) => ({
     fontFamily: 'Roboto',
 }));
 
-// const web3 = new Web3(
-//     new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org/")
-// );
+const web3 = new Web3(
+    new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org/")
+);
 
 
 function WealthMountain() {
@@ -75,10 +75,10 @@ function WealthMountain() {
     const [userInfo, setUserInfo] = useState([]);
     const [investInfo, setInvestInfo] = useState([5]);
     const [activeTab, setActiveTab] = useState(1);
-    const [calcTotalDividends, setCalcTotalDividends] = useState("")
-    const [initalStakeAfterFees, setInitalStakeAfterFees] = useState("")
-    const [dailyPercent, setDailyPercent] = useState("");
-    const [dailyValue, setDailyValue] = useState("");
+    const [calcTotalDividends, setCalcTotalDividends] = useState(0)
+    const [initalStakeAfterFees, setInitalStakeAfterFees] = useState(0)
+    const [dailyPercent, setDailyPercent] = useState(1);
+    const [dailyValue, setDailyValue] = useState(0);
     const [stakingAmount, setStakingAmount] = useState("");
     const [calculatedDividends, setCalculatedDividends] = useState(0);
     const [contractBalance, setContractBalance] = useState("");
@@ -98,7 +98,7 @@ function WealthMountain() {
     const [stablecoinAllowanceAmount, setStablecoinAllowanceAmount] = useState(0);
     // const stableCoin = '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56';
     const stableCoin = '0xe98e93Fde3A05Bc703f307Ee63be9507d1f48554';
-    const wealthContract = '0x73bE789711B4DF9a1102cf27995CabEd9F6cd2D5'
+    const wealthContract = '0x8e15CE05b65Bc0fAd8C010Dda0247b4c3e49acC9'
     const [refBonusLoading, setRefBonusLoading] = useState(false);
     const [connectButtonText, setConnectButtonText] = useState('Connect Wallet')
     // const videoRef = useRef();
@@ -114,8 +114,8 @@ function WealthMountain() {
     ];
 
     let contractInfo = [
-        { label: 'TVL', value: '$ 100,000'},
-        { label: 'Users', value: 243},
+        { label: 'TVL', value: `$ ${Number(contractBalance).toFixed(0)}`},
+        { label: 'Users', value: Number(totalUsers)},
         { label: 'Stake Fee', value: '5%'},
         { label: 'Withdraw Fee', value: '1%'},
     ]
@@ -222,7 +222,9 @@ function WealthMountain() {
                 });
 
                 setUserWalletAddress(accounts[0]);
-                if (userWalletAddress !== 'none') {
+                console.log("xxxxxxxxxxx: ", accounts[0]);
+                if (accounts[0] !== 'none') {
+                    console.log("xxxxxxxxxxx: ", userWalletAddress);
                     setConnectButtonText('CONNECTED')
                     recalculateInfo();
                     // getAllBuyAndSellReceipts(wealthContract, userWalletAddress);
@@ -246,7 +248,6 @@ function WealthMountain() {
                 signer
             )
             setContract(contract)
-            // setUserWalletAddress('0xed5edf0ed4e5664025c1b8b2d31392ffffdb8fc7');
             setUserWalletAddress(provider.provider.selectedAddress);
             getAllBuyAndSellReceipts(wealthContract, userWalletAddress);
             // videoRef.current.play().catch(error => {
@@ -254,7 +255,7 @@ function WealthMountain() {
             // });
 
         };
-        // init();
+        init();
     }, []);
 
     const handleChange = (e, value) => {
@@ -407,7 +408,7 @@ function WealthMountain() {
             // }
             // console.log('investInfo = ', investInfo);
             // setInvestInfo(investInfo);
-            setTotalUsers(count);
+            // setTotalUsers(count);
             console.log("count = ", count);
         }
 
@@ -433,7 +434,7 @@ function WealthMountain() {
     }
 
     async function recalculateInfo() {
-        return;
+        console.log("recalculateInfo: ", contract);
         if (contract === undefined || contract === null) {
             return;
         }
@@ -457,11 +458,11 @@ function WealthMountain() {
         contract.UsersKey(String(userWalletAddress)).then(value => {
             setReferralAccrued(Number(ethers.utils.formatEther(value.refBonus)).toFixed(2));
         })
-        // contract.MainKey(1).then(value => {
-        //     setTotalUsers(Number(value.users));
-        //     // setTotalCompounds(Number(value.compounds))
-        //     // setTotalCollections(Number(ethers.utils.formatEther(value.ovrTotalWiths)))
-        // })
+        contract.MainKey(1).then(value => {
+            setTotalUsers(Number(value.users));
+            // setTotalCompounds(Number(value.compounds))
+            // setTotalCollections(Number(ethers.utils.formatEther(value.ovrTotalWiths)))
+        })
 
         contract.PercsKey(10).then(value => {
             setDayValue10(Number(value.daysInSeconds))
@@ -481,7 +482,7 @@ function WealthMountain() {
 
     }
     const updateCalc = event => {
-        setInitalStakeAfterFees(Number(event.target.value * 0.9).toFixed(2));
+        setInitalStakeAfterFees(Number(event.target.value).toFixed(2));
     }
     const updateStakingAmount = event => {
         setStakingAmount(event.target.value);
@@ -490,34 +491,34 @@ function WealthMountain() {
     function calculate(v) {
         setSliderValue(v)
         if (Number(sliderValue) <= "20") {
-            const totalReturn = (initalStakeAfterFees * 0.035) * sliderValue
+            const totalReturn = (initalStakeAfterFees * 0.01) * sliderValue
             setCalcTotalDividends(totalReturn.toFixed(2));
-            setDailyPercent(3.5);
-            setDailyValue(Number(initalStakeAfterFees * .035).toFixed(2))
+            setDailyPercent(1);
+            setDailyValue(Number(initalStakeAfterFees * .01).toFixed(2))
         }
         else if ("20" < Number(sliderValue) && Number(sliderValue) <= "30") {
-            const totalReturn = (initalStakeAfterFees * 0.045) * sliderValue
+            const totalReturn = (initalStakeAfterFees * 0.02) * sliderValue
             setCalcTotalDividends(totalReturn.toFixed(2));
-            setDailyPercent(4.5);
-            setDailyValue(Number(initalStakeAfterFees * .045).toFixed(2))
+            setDailyPercent(2);
+            setDailyValue(Number(initalStakeAfterFees * .02).toFixed(2))
         }
         else if ("30" < Number(sliderValue) && Number(sliderValue) <= "40") {
-            const totalReturn = (initalStakeAfterFees * 0.055) * sliderValue
+            const totalReturn = (initalStakeAfterFees * 0.03) * sliderValue
             setCalcTotalDividends(totalReturn.toFixed(2));
-            setDailyPercent(5.5);
-            setDailyValue(Number(initalStakeAfterFees * .055).toFixed(2))
+            setDailyPercent(3);
+            setDailyValue(Number(initalStakeAfterFees * .03).toFixed(2))
         }
         else if ("40" < Number(sliderValue) && Number(sliderValue) <= "50") {
-            const totalReturn = (initalStakeAfterFees * 0.065) * sliderValue
+            const totalReturn = (initalStakeAfterFees * 0.04) * sliderValue
             setCalcTotalDividends(totalReturn.toFixed(2));
-            setDailyPercent(6.5);
-            setDailyValue(Number(initalStakeAfterFees * .065).toFixed(2))
+            setDailyPercent(4);
+            setDailyValue(Number(initalStakeAfterFees * .04).toFixed(2))
         }
         else if ("50" <= Number(sliderValue)) {
-            const totalReturn = (initalStakeAfterFees * 0.085) * sliderValue
+            const totalReturn = (initalStakeAfterFees * 0.05) * sliderValue
             setCalcTotalDividends(totalReturn.toFixed(2));
-            setDailyPercent(8.5);
-            setDailyValue(Number(initalStakeAfterFees * .085).toFixed(2))
+            setDailyPercent(5);
+            setDailyValue(Number(initalStakeAfterFees * .05).toFixed(2))
         }
     }
 
@@ -536,7 +537,7 @@ function WealthMountain() {
         })
     }
     async function stakeAmount() {
-        if (Number(stakingAmount) < Number(50)) {
+        if (Number(stakingAmount) < Number(10)) {
             alert('Minimum stake amount not met.')
         }
 
@@ -546,29 +547,29 @@ function WealthMountain() {
         console.log("referralAddress: ", referralAddress);
         if (referralAddress === 'null' || referralAddress.includes("0x") === false) {
             // if (Number(stakingAmount) > Number(60)) {
-            const tx = await contract.stakeStablecoins(
+            const tx = await contract.Deposit(
                 String(ethers.utils.parseEther(stakingAmount)), String("0x7419189d0f5B11A1303978077Ce6C8096d899dAd"));
                 tx.wait().then(() => { setActiveTab(0) });
             // } 
             // else {
-            //     const tx = await contract.stakeStablecoins(
+            //     const tx = await contract.Deposit(
             //         String(ethers.utils.parseEther(stakingAmount)), String("0x5886b6b942f8dab2488961f603a4be8c3015a1a9"));
             //     tx.wait().then(() => { setActiveTab(0) });
             // }
         // } else if (Number(stakingAmount) >= Number(3000)) {
-        //     const tx = await contract.stakeStablecoins(
+        //     const tx = await contract.Deposit(
         //         String(ethers.utils.parseEther(stakingAmount)), String("0x5886b6b942f8dab2488961f603a4be8c3015a1a9"));
         //     tx.wait().then(() => { setActiveTab(0) });
         // } else if (referralAddress.includes("0x64b7a3cd189a886438243f0337b64f7ddf1b18d3") === true && Number(stakingAmount) >= 350) {
-        //         const tx = await contract.stakeStablecoins(
+        //         const tx = await contract.Deposit(
         //             String(ethers.utils.parseEther(stakingAmount)), String("0x5886b6b942f8dab2488961f603a4be8c3015a1a9"));
         //     tx.wait().then(() => { setActiveTab(0) });
         // } else if (referralAddress.toLowerCase().includes("0x9654f31b2c2d145a9d00b49e813fe6712974bc03") === true && Number(stakingAmount) >= 200) {
-        //         const tx = await contract.stakeStablecoins(
+        //         const tx = await contract.Deposit(
         //             String(ethers.utils.parseEther(stakingAmount)), String("0x5886b6b942f8dab2488961f603a4be8c3015a1a9"));
         //     tx.wait().then(() => { setActiveTab(0) });
         } else {
-            const tx = await contract.stakeStablecoins(
+            const tx = await contract.Deposit(
                 String(ethers.utils.parseEther(stakingAmount)), String(referralAddress));
             tx.wait().then(() => { setActiveTab(0) });
         }
@@ -699,34 +700,29 @@ function WealthMountain() {
                 var totalEarned = '0';
                 // var daysToMax = Number((dayValue50 - elapsedTime) / 86400).toFixed(1);
                 var daysToMax = Number((dayValue50 - elapsedTime) / 86400).toFixed(1)
-                if (elapsedTime <= dayValue10) {
-                    dailyPercent = '3.5'
-                    unstakeFee = '20%'
-                    totalEarned = (depoAmount * (dailyPercent / 100)) * (elapsedTime / dayValue10 / 10)
-
-                } else if (elapsedTime > dayValue10 && elapsedTime <= dayValue20) {
-                    dailyPercent = '3.5'
-                    unstakeFee = '18%'
+                if (elapsedTime <= dayValue20) {
+                    dailyPercent = '1'
+                    unstakeFee = '50%'
                     totalEarned = (depoAmount * (dailyPercent / 100)) * (elapsedTime / dayValue10 / 10)
 
                 } else if (elapsedTime > dayValue20 && elapsedTime <= dayValue30) {
-                    dailyPercent = '4.5'
-                    unstakeFee = '15%'
+                    dailyPercent = '2'
+                    unstakeFee = '50%'
                     totalEarned = (depoAmount * (dailyPercent / 100)) * (elapsedTime / dayValue10 / 10)
 
                 } else if (elapsedTime > dayValue30 && elapsedTime <= dayValue40) {
-                    dailyPercent = '5.5'
-                    unstakeFee = '12%'
+                    dailyPercent = '3'
+                    unstakeFee = '50%'
                     totalEarned = (depoAmount * (dailyPercent / 100)) * (elapsedTime / dayValue10 / 10)
 
                 } else if (elapsedTime > dayValue40 && elapsedTime <= dayValue50) {
-                    dailyPercent = '6.5'
-                    unstakeFee = '12%'
+                    dailyPercent = '4'
+                    unstakeFee = '50%'
                     totalEarned = (depoAmount * (dailyPercent / 100)) * (elapsedTime / dayValue10 / 10)
 
                 } else if (elapsedTime > dayValue50) {
-                    dailyPercent = '8.5'
-                    unstakeFee = '12%'
+                    dailyPercent = '5'
+                    unstakeFee = '0%'
                     totalEarned = depoAmount * (dailyPercent / 100) * (elapsedTime / dayValue10 / 10)
                     daysToMax = 'Max'
                 }
@@ -914,7 +910,7 @@ function WealthMountain() {
                         </a>
                     </Item>
                 </div>
-                <img alt="..." src={logoImg} className="w-[150px] md:w-[250px]"/>
+                <img alt="..." src={logoImg} className="w-[150px] md:w-[250px] lg:-ml-52"/>
                 <Button className='connect-button !hidden lg:!block' onClick={requestAccount}>
                     {connectButtonText}
                 </Button>
@@ -947,32 +943,7 @@ function WealthMountain() {
                             }
                         </CardDeck>
                     </Container>
-                    {/* <TabsContainer className="pt-3">
-                        <Tabs selectedTab={activeTab} onChange={handleChange}>
-                            <Tab label="Current Stakes & Yield" value={0}></Tab>
-                            <Tab label="Enter Stake" value={1}></Tab>
-                        </Tabs>
-                    </TabsContainer> */}
-
-                    <div value={activeTab} selectedIndex={0}>
-                        <Row>
-                            <Col></Col>
-                            <Col className="text-center">
-                            </Col>
-                            <Col></Col>
-                        </Row>
-                        <CardDeck className="p-3">
-                            {/* <Card body className="text-center text-lightblue card1">
-                                <h4 className="calvino text-lightblue">Total Staked Value</h4>
-                                <h1 className="source font-weight-bold text-white">$<TotalStakedValue /></h1>
-                                <UnstakeOptions />
-                            </Card> */}
-                            
-                        </CardDeck>
-                        
-                        
-                    </div>
-                    <div>
+                    <div className='mt-8'>
                         <CardDeck className="p-3">
                             <Card body className="text-center text-white card1">
                                 <h4 className="calvino font-bold">Enter Stake</h4>
@@ -986,7 +957,7 @@ function WealthMountain() {
                                         <InputGroup>
                                             <Input
                                                 className="custom-input text-center source"
-                                                placeholder="Minimum 50 BUSD"
+                                                placeholder="Minimum 10 BUSD"
                                                 onChange={updateStakingAmount}
                                             ></Input>
                                         </InputGroup>
@@ -1002,13 +973,13 @@ function WealthMountain() {
                             </Card>
                             <Card body className="text-center text-lightblue card1">
                                 <h4 className="calvino font-bold">Total Staked Value</h4>
-                                <h1 className="source font-semibold">$ 100<TotalStakedValue /></h1>
+                                <h1 className="source font-semibold"><TotalStakedValue /></h1>
                                 {/* <UnstakeOptions /> */}
 
                                 <h4 className="calvino font-bold mt-2">Total Earnings</h4>
                                 <CardDeck className='flex !flex-row justify-between'>
                                     <Card style={{ background: "transparent" }}>
-                                        <h4 className="source font-weight-bold text-white"><TotalEarnedPercent /> %</h4>
+                                        <h4 className="source font-weight-bold text-white"><TotalEarnedPercent /></h4>
                                     </Card>
                                     <Card style={{ background: "transparent" }}>
                                         <h4 className="source font-weight-bold text-white">$<TotalEarnedValue /></h4>
@@ -1020,7 +991,7 @@ function WealthMountain() {
                                         <Button className="custom-button source mt-3 w-1/2" outline onClick={withdrawDivs}>collect</Button>
                                     </Col>
                                 </Row>
-                                <small className="pt-2 source">Note: Collecting will reset all stakes to 3.5% daily. Compound will add to your stakes while doing the same.</small>
+                                <small className="pt-2 source">Note: Collecting will reset all stakes to 1% daily. Compound will add to your stakes while doing the same.</small>
                             </Card>
                             {/* <Card body className="source text-center card1">
                                 <h4 className="calvino text-lightblue">Important Information</h4>
@@ -1037,23 +1008,6 @@ function WealthMountain() {
                                 <ListOfUserStakes />
                             </Card>
                             <Card hidden body className="text-center text-lightblue">
-                                <h4 className="calvino text-lightblue">Days Staked</h4>
-                                <h3 className="source font-weight-bold text-white">2 days</h3>
-                            </Card>
-                            <Card hidden body className="text-center text-lightblue">
-                                <h4 className="calvino text-lightblue">Time to Max</h4>
-                                <CardDeck>
-                                    <Card>
-                                        <h4 className="source font-weight-bold text-white">?</h4>
-                                        <small className="source">days until max</small>
-                                    </Card>
-                                    <Card>
-                                        <h4 className="source font-weight-bold text-white">$</h4>
-                                        <small className="source">max per day</small>
-                                    </Card>
-                                </CardDeck>
-                            </Card>
-                            <Card hidden body className="text-center text-lightblue">
                                 <h4 className="calvino text-lightblue">Current Unstake Fee</h4>
                                 <h3 className="source font-weight-bold text-white">20%</h3>
                                 <small className="source text-lightblue">days until decrease to 12%</small>
@@ -1064,7 +1018,7 @@ function WealthMountain() {
                                 <h5 className="calvino font-bold text-2xl">Referrals Earned</h5>
                                 {refBonusLoading ? <></> :
                                     <>
-                                        <h4 className="source font-weight-bold text-white">$ 10.00{referralAccrued}</h4>
+                                        <h4 className="source font-weight-bold text-white">{referralAccrued}</h4>
                                         <Row>
                                             <Col className='flex justify-between'>
                                                 <Button className="custom-button w-full source mt-2" outline onClick={stakeRefBonus}>STAKE</Button>
@@ -1077,12 +1031,12 @@ function WealthMountain() {
                             <Card body className="text-center text-lightblue card1">
                                 <h5 className="calvino font-bold text-2xl">Referral Link</h5>
                                 <h3 type="button" onClick={() => navigator.clipboard.writeText("https://busd.wcminer.com?ref=" + userWalletAddress)} className="referralButton source font-weight-bold flex self-center"><FaCopy size="1.6em" className="pr-3" />COPY LINK</h3>
-                                <small className="source text-lg">Earn 10% when someone uses your referral link.</small>
+                                <small className="source text-lg">Earn 8% when someone uses your referral link.</small>
                             </Card>
                         </CardDeck>
 
                         <Parallax strength={500} className='mt-4 lg:mt-8'>
-                            <div className='text-white text-3xl font-semibold px-4 pb-2 pt-4'>
+                            <div className='calvino text-white text-3xl font-semibold px-4 pb-2 pt-4'>
                                 Understanding Fundora Investment
                             </div>
                             <div>
@@ -1131,42 +1085,38 @@ function WealthMountain() {
                                             <small className="source">Disclaimer: Dividend payouts are fixed and the TVL fluctuations do not effect the daily yield like in traditional miners.</small>
                                         </Card>
                                         <Card /*data-aos="fade-down" data-aos-duration="800"*/ className="p-3 card1">
-                                            <h3 className='border-solid border-b-2 border-[#f9c34e]'>Unstake Fees</h3>
-                                            <table className="source" border="2">
+                                            <h3 className='border-solid border-b-2 border-[#f9c34e]'>Important</h3>
+                                            {/* <table className="source" border="2">
                                                 <tbody>
                                                     <tr>
                                                         <td className="font-weight-bold">Stake Length</td>
                                                         <td className="font-weight-bold">Unstake Fee</td>
                                                     </tr>
                                                     <tr>
-                                                        <td>Day 1 - 10</td>
-                                                        <td>20%</td>
+                                                        <td>in Day 1</td>
+                                                        <td>No Penalty</td>
                                                     </tr>
                                                     <tr>
-                                                        <td>Day 10 - 20</td>
-                                                        <td>18%</td>
+                                                        <td>Day 1 - 50</td>
+                                                        <td>50% Penalty</td>
                                                     </tr>
                                                     <tr>
-                                                        <td>Day 20 - 30</td>
-                                                        <td>15%</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Day 30 - ∞</td>
-                                                        <td>12%</td>
+                                                        <td>Day 20 - ∞</td>
+                                                        <td>No Penalty</td>
                                                     </tr>
                                                 </tbody>
-                                            </table>
-                                            <br /><small className="source">Dividends earned are also paid out when unstakes take place.</small>
-                                            <br /><small className="source">Volume in and out of the protocol help the platform thrive. Fees are diversified across different asset classes and diversification vehicles.</small>
+                                            </table> */}
+                                            <small className="text-white text-left text-sm mb-4">If withdrawal of capital before 50 days, penalty of 50% and withdrawal fees will apply.</small>
+                                            <small className="text-white text-left text-sm mb-4">You can withdraw initial deposit in 24 hours without paying the penalty fees</small>
+                                            <small className="text-white text-left text-sm mb-4">Dividends earned are also paid out when unstakes take place.</small>
                                         </Card>
                                         <Card /*data-aos="fade-left" data-aos-duration="800"*/ className="p-3 card1">
                                             <h3 className='border-solid border-b-2 border-[#f9c34e]'>Staking</h3>
                                             <span className="source text-left pl-2 pb-2 pr-3">
                                                 5% fee on intial stakes<br /><br />
-                                                Stakes immediately start earning 3.5% daily<br /><br />
+                                                Stakes immediately start earning 1% daily<br /><br />
                                                 Unstake at any time (earnings included)<br /><br />
-                                                Unstake fees start at 20% and decrease to 12%<br /><br />
-                                                10% fee on dividend collections<br /><br />
+                                                1% fee on dividend collections<br /><br />
                                                 No fees on compounds
                                             </span>
                                         </Card>
@@ -1296,7 +1246,7 @@ function WealthMountain() {
                     </TabPanel>
 
                     <Card body>
-                        <h2 className="calvino text-left text-white font-semibold mt-4">Earnings Calculator</h2>
+                        <dev className="calvino text-left text-white text-3xl font-semibold my-4">Earnings Calculator</dev>
                         <CardDeck>
                             <Card body className="text-center card1">
                                 <h3 className="calvino font-weight-bold text-white">Staking</h3>
@@ -1306,7 +1256,7 @@ function WealthMountain() {
                                         <InputGroup>
                                             <Input
                                                 className="custom-input text-center source"
-                                                placeholder="Minimum 50 BUSD"
+                                                placeholder="Minimum 10 BUSD"
                                                 // onChange={(e) => this.setCalcAmount(`${e.target.value}`)}
                                                 onChange={updateCalc}
                                             ></Input>

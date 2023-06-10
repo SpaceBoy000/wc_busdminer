@@ -12924,16 +12924,22 @@ td.rdtYear:hover {
 }
 
 .custom-button {
-  background: white;
-  color: black;
+  background: transparent;
+  color: #f9c34e;
   mix-blend-mode: normal;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  border-radius: 20px;
-  border: none;
+  border-radius: 30px;
+  border: solid 2px #f9c34e;
   font-weight: 'bold';
   min-width: 120px;
   font-family: 'Roboto';
   width: 45%;
+}
+
+.custom-button:hover {
+  background-color: #f9c34e;
+  color: white;
+  border-color: #f9c34e;
 }
 
 .card {
@@ -12975,14 +12981,15 @@ td.rdtYear:hover {
 }
 
 .custom-input {
-  background: black;
-  border-radius: 15px;
-  border: none;
+  background: transparent;
+  border: 2px solid #f9c34e;
+  border-radius: 30px;
   color: white;
 }
 
 .custom-input:focus {
-  background-color: black;
+  background: transparent;
+  border: 2px solid #f9c34e;
   color: white;
 }
 
