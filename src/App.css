@@ -12907,14 +12907,15 @@ td.rdtYear:hover {
   width: 1%; }
 
 .connect-button {
-  background: transparent;
-  color: #f9c34e;
+  background: #F8C34E;
   mix-blend-mode: normal;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  border-radius: 3rem;
+  border-radius: 12px;
+  color: black;
+  font-size: 12px;
+  /* box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25); */
   border: solid 1px #f9c34e;
   font-weight: 'bold';
-  min-width: 134px;
+  min-width: 130px;
   font-family: 'Roboto';
 }
 
@@ -12924,22 +12925,23 @@ td.rdtYear:hover {
 }
 
 .custom-button {
-  background: transparent;
-  color: #f9c34e;
+  background: #F8C34E;
+  border-radius: 12px;
+  color: black;
   mix-blend-mode: normal;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  border-radius: 30px;
-  border: solid 2px #f9c34e;
   font-weight: 'bold';
   min-width: 120px;
   font-family: 'Roboto';
-  width: 45%;
+  font-size: 16px;
+  border: none;
+  text-transform: capitalize !important;
 }
 
 .custom-button:hover {
   background-color: #f9c34e;
-  color: white;
-  border-color: #f9c34e;
+  /* color: white; */
+  /* border-color: #f9c34e; */
 }
 
 .card {
@@ -12949,25 +12951,19 @@ td.rdtYear:hover {
 }
 
 .custom-header {
+  position: fixed;
+  background: #0E1716;
+  width: 100%;
   display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin: 0px 30px;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  z-index: 1;
 }
 
 .header_menu {
   display: flex;
   justify-content: space-evenly;
   align-self: center;
-}
-
-@media (min-width: 576px) {
-  .custom-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 2rem;
-  } 
 }
 
 .MuiSlider-thumb {
@@ -12981,15 +12977,14 @@ td.rdtYear:hover {
 }
 
 .custom-input {
-  background: transparent;
-  border: 2px solid #f9c34e;
-  border-radius: 30px;
+  background: #141414;
+  border: 1px solid #2E2E2E;
+  border-radius: 12px;
   color: white;
 }
 
 .custom-input:focus {
-  background: transparent;
-  border: 2px solid #f9c34e;
+  background: #141414;
   color: white;
 }
 
@@ -13117,6 +13112,7 @@ td.rdtYear:hover {
 
 .main-content {
   display: flex;
+  padding-top: 80px;
 }
 
 .adsbox {
@@ -13139,8 +13135,10 @@ td.rdtYear:hover {
 }
 
 .card1 {
-  background-color: #22272a;
-  border-radius: 2rem;
+  background: #15151B;
+  border-radius: 15px;
+  /* box-shadow: linear-gradient(180deg, white, 50%, black, 100%) 0px -1px 1px 0.5px; */
+  box-shadow: #f7c24d 0px -1px 1px 0.5px;
   padding: 15px 20px;
 }
 
