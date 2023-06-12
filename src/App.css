@@ -12951,8 +12951,7 @@ td.rdtYear:hover {
 }
 
 .custom-header {
-  position: fixed;
-  background: #0E1716;
+  /* background: #0E1716; */
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -13014,17 +13013,8 @@ td.rdtYear:hover {
     width: 100%;
   }
 
-  .header_menu {
-    display: none;
-  }
   .desktop-button{
     display: none;
-  }
-
-  .custom-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
   }
 
   .mobile_head {
@@ -13151,5 +13141,12 @@ td.rdtYear:hover {
   .main-content {
     flex-direction: column;
     align-items: center;
+    padding-top: 0px;
+  }
+
+  .custom-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }

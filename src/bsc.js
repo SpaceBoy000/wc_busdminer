@@ -18,7 +18,14 @@ import { GiHamburgerMenu } from "react-icons/gi"
 import axios from "axios";
 import RealTimeChart from "./chart";
 import Web3 from "web3";
+import Web3Modal from 'web3modal';
+
+import WalletConnectProvider from "@walletconnect/web3-provider";
+import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
 import logoImg from "./assets/logo.png";
+import bscImg from "./assets/bsc.png";
+import twitterImg from "./assets/twitter.png";
+import telegramImg from "./assets/telegram.png";
 
 import abiDecoder from "abi-decoder";
 // window.Buffer = window.Buffer || require("buffer").Buffer;
@@ -40,7 +47,7 @@ import {
     Table,
     Row
 } from "reactstrap";
-import { ethers, Contract } from 'ethers';
+import { ethers, Contract, providers } from 'ethers';
 
 const TabsContainer = styled.div`
   display: flex;
@@ -50,13 +57,11 @@ const TabsContainer = styled.div`
 const Item = styled('div')(({ theme }) => ({
     display: 'flex',
     justifyContent: 'center',
-    padding: '5px 10px',
-    margin: '0px 5px',
+    padding: '5px 5px',
+    margin: '0px',
     textAlign: 'center',
     fontSize: "16px",
-    // color: theme.palette.text.secondary,
     color: 'white',
-    // border: "solid white 2px",
     borderRadius: "1.25rem",
     background: "transparent",
     minWidth: '150px',
@@ -68,6 +73,36 @@ const web3 = new Web3(
     new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org/")
 );
 
+let web3Modal;
+if (typeof window !== "undefined") {
+  web3Modal = new Web3Modal({
+    network: "mainnet", // optional
+    cacheProvider: true,
+    providerOptions: {
+      binancechainwallet: {
+        package: true,
+      },
+      walletconnect: {
+        package: WalletConnectProvider,
+        options: {
+          infuraId: 'e6943dcb5b0f495eb96a1c34e0d1493e',
+          rpc: {
+            97: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
+          },
+        },
+      },
+      coinbasewallet: {
+        package: CoinbaseWalletSDK,
+        options: {
+          appName: "Coinbase",
+          infuraId: 'e6943dcb5b0f495eb96a1c34e0d1493e',
+          chainId: 97
+        },
+      },
+    }, // required
+    theme: "dark",
+  });
+}
 
 function WealthMountain() {
     const [sliderValue, setSliderValue] = useState('50');
@@ -169,6 +204,61 @@ function WealthMountain() {
 
     //     return () => clearInterval(interval);
     // }, [])
+    
+    //**********************web3 modal***************************//
+    const connectWallet = async () => {
+        try {
+          const provider = await web3Modal.connect();
+          const client = new Web3(provider);
+        //   setWeb3(client);
+          const newProvider = new providers.Web3Provider(provider);
+        //   const res = await checkNetwork(newProvider);
+        //   console.log("checkNetwork result: ", res);
+        //   if (res === false) return;
+    
+          const accounts = await client.eth.getAccounts();
+          localStorage.setItem('address', accounts[0]);
+          setUserWalletAddress(accounts[0]);
+          console.log("connectWallet address: ", accounts[0]);
+          if (accounts[0] !== 'none') {
+                console.log("xxxxxxxxxxx: ", userWalletAddress);
+                setConnectButtonText('CONNECTED')
+                recalculateInfo();
+            }
+    
+          provider.on("accountsChanged", async function (accounts) {
+            if (accounts[0] !== undefined) {
+              setUserWalletAddress(accounts[0]);
+              setConnectButtonText('CONNECTED')
+                recalculateInfo();
+            } else {
+              setUserWalletAddress('');
+            }
+          });
+    
+        //   provider.on('chainChanged', async function (chainId) {
+        //     setChainID(chainId);
+        //     await updateBalances();
+        //   });
+    
+        //   provider.on('disconnect', function (error) {
+        //     setUserWalletAddress('');
+        //     initializeBalance();
+        //   });
+        } catch (error) {
+          console.log('[connectWallet Error] => ', error);
+        }
+      }
+    
+      const disconnect = async () => {
+        await web3Modal.clearCachedProvider();
+        // const client = new Web3(config.mainNetUrl);
+        // setWeb3(client);
+        // localStorage.removeItem("address");
+        // setChainID('');
+        // setUserWalletAddress('');
+        // initializeBalance();
+      }
 
     async function requestAccount() {
         console.log('Requesting account...');
@@ -237,6 +327,7 @@ function WealthMountain() {
             alert('Meta Mask not detected');
         }
     }
+
     useEffect(() => {
         const init = async () => {
             var provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -434,13 +525,11 @@ function WealthMountain() {
     }
 
     async function recalculateInfo() {
-        console.log("recalculateInfo: ", contract);
         if (contract === undefined || contract === null) {
             return;
         }
 
         contract.userInfo().then(value => {
-            console.log("User Info xx=> ", value);
             setUserInfo(value)
         })
         contract.calcdiv(userWalletAddress).then(value => {
@@ -484,8 +573,17 @@ function WealthMountain() {
     const updateCalc = event => {
         setInitalStakeAfterFees(Number(event.target.value).toFixed(2));
     }
+
+    const [inputAmount, setInputAmount] = useState('');
     const updateStakingAmount = event => {
+        console.log(event.target.value);
         setStakingAmount(event.target.value);
+        setInputAmount(event.target.value);
+    }
+
+    const handleClickMax = () => {
+        setStakingAmount(userStablecoinBalance.toFixed(1));
+        setInputAmount(userStablecoinBalance.toFixed(1));
     }
 
     function calculate(v) {
@@ -775,7 +873,7 @@ function WealthMountain() {
         if (userInfo.length == 0) {
             return (
                 <>
-                    <Button outline className="custom-button mt-3 source" onClick={() => { setActiveTab(1) }}>Start a stake to see your info</Button>
+                    <Button outline className="custom-button mt-3 source">Start a stake</Button>
                 </>
             )
         }
@@ -826,7 +924,7 @@ function WealthMountain() {
 
     return (
         <>
-            {mobile === true ? (
+            {/* {mobile === true ? (
                 <div className="mobile_head">
                     <div className="mobile_herader_content">
                         <div style={{ alignSelf: "center", marginBottom: "30px" }}>
@@ -887,51 +985,59 @@ function WealthMountain() {
                     ></div>
                 </div>
             )
-                : null}
-            <div className="custom-header">
-                <img alt="..." src={logoImg} className="w-[150px] md:w-[168px]"/>
-                <div className="header_menu !hidden lg:!flex">
-                    <Item>
-                        <a href="/whitepaper.pdf" target="_blank"
-                            style={{
-                                textDecoration: 'none',
-                                fontWeight: "bolder",
-                                textTransform: 'uppercase'
-                            }}
-                        >
-                            <span>Whitepaper</span>
-                            {/* <FaDiscord/> */}
-                        </a>
-                    </Item>
-                    <Item>
-                        <a href="https://bscscan.com/" target="_blank" rel="noreferrer"
-                            style={{
-                                textDecoration: 'none',
-                                fontWeight: "bolder",
-                                textTransform: 'uppercase'
-                            }}
-                        >
-                            <span>Audit Report </span>
-                            {/* <SiBinance/> */}
-                        </a>
-                    </Item>
+            : null} */}
+            <div className="relative md:fixed w-full z-10 md:!bg-[#0E1716] bg-transparent">
+                <div className="custom-header">
+                    <img alt="..." src={logoImg} className="w-[150px] md:w-[168px] hidden md:block"/>
+                    <div className="header_menu lg:!flex">
+                        <Item>
+                            <a href="/whitepaper.pdf" target="_blank"
+                                style={{
+                                    textDecoration: 'none',
+                                    fontWeight: "bolder",
+                                    textTransform: 'uppercase'
+                                }}
+                            >
+                                <span>Whitepaper</span>
+                            </a>
+                        </Item>
+                        <Item>
+                            <a href="https://bscscan.com/" target="_blank" rel="noreferrer"
+                                style={{
+                                    textDecoration: 'none',
+                                    fontWeight: "bolder",
+                                    textTransform: 'uppercase'
+                                }}
+                            >
+                                <span>Audit Report </span>
+                                {/* <SiBinance/> */}
+                            </a>
+                        </Item>
+                    </div>
+                    <Button className='connect-button !hidden md:!block' onClick={connectWallet}>
+                        {connectButtonText}
+                    </Button>
                 </div>
-                <Button className='connect-button !hidden lg:!block' onClick={requestAccount}>
-                    {connectButtonText}
-                </Button>
-                <div
+                {/* <div
                     className='mobile_btn'
                     onClick={() => {
                         setMobile(true)
                     }}
                 >
                     <GiHamburgerMenu />
+                </div> */}
+
+                <div className='block md:hidden w-full flex flex-col items-center'>
+                    <img alt="..." src={logoImg} className="w-[150px] md:w-[168px]"/>
+                    <Button className='connect-button w-1/2 my-4' onClick={connectWallet}>
+                        {connectButtonText}
+                    </Button>
                 </div>
             </div>
 
             <div className='main-content' style={{display:'flex', flexDirection:'column'}}>
                 <Container className="pt-3">
-                    <div className="text-center py-3 md:pb-4 text-[30px] lg:text-[40px] text-white font-bold">Ignite Your Crypto Profits with Fundora</div>
+                    <div className="text-center py-3 md:pb-4 text-[30px] lg:text-[40px] text-white font-bold">Effortless Investing, <span className='text-[#F8C34E]'>Impressive Returns:</span><br/>Fundora Makes it Possible</div>
                     <div className="text-center pb-4 md:pb-8 text-lg md:!text-xl text-white leading-6">Effortless wealth growth with Fundora. Our expert traders handle the complexities of trading while you enjoy the profits.Just make a deposit and let us maximize your returns. Sit back, relax and let fundora take care of the hard works so you can effortlessly enjoy the benefits of your investments.</div>
                     <Container>
                         <CardDeck>
@@ -960,15 +1066,16 @@ function WealthMountain() {
                                             <Label className="source font-weight-bold text-lightblue">Stake Amount</Label>
                                             <small className="flex source text-lightblue text-left">Balance: &nbsp;<span className="text-[#F8C34E] font-weight-bold">{userStablecoinBalance.toFixed(1)} BUSD</span></small>
                                         </div>
-                                        <InputGroup className='!items-center'>
+                                        <div className='relative !items-center w-full'>
                                             <Input
-                                                className="custom-input text-center source min-h-[50px]"
+                                                className="absolute custom-input text-center source min-h-[50px]"
                                                 placeholder="Minimum 10 BUSD"
                                                 onChange={updateStakingAmount}
+                                                value={inputAmount}
                                             >
                                             </Input>
-                                            {/* <Button className='absolute right-2 bg-white !text-sm !py-0 !px-2 h-10'>Max</Button> */}
-                                        </InputGroup>
+                                            <Button className='absolute right-2 !bg-[#F8C34E] !border-none !text-sm !py-0 !px-2 h-10 float-right top-1' onClick={handleClickMax}>Max</Button>
+                                        </div>
                                         <div className='my-2'>
                                             <Button onClick={approveButton} className="custom-button mt-4 font-weight-bold !mr-0 w-full">Approve</Button>
                                             <Button onClick={stakeAmount} className="custom-button mt-4 font-weight-bold !mr-0 w-full">Stake</Button>
@@ -1044,22 +1151,22 @@ function WealthMountain() {
                                 </Card>
                                 <Card body className="text-center card1">
                                     <h3 className="calvino font-weight-bold text-white">Earnings</h3>
-                                    <CardDeck>
-                                        <Card>
+                                    <CardDeck className='flex-row justify-between'>
+                                        <Card className='!min-w-[130px]'>
                                             <h3 className="calvino text-white">${calcTotalDividends}</h3>
                                             <small className="source text-white">total dividends earned</small>
                                         </Card>
-                                        <Card>
+                                        <Card className='!min-w-[130px]'>
                                             <h3 className="calvino text-white">${initalStakeAfterFees}</h3>
                                             <small className="source text-white">initial stake after fees</small>
                                         </Card>
                                     </CardDeck>
-                                    <CardDeck className="pt-3">
-                                        <Card>
+                                    <CardDeck className='flex-row justify-between'>
+                                        <Card className='!min-w-[130px]'>
                                             <h3 className="calvino text-white">{dailyPercent}%</h3>
                                             <small className="source text-white">earning daily (%)</small>
                                         </Card>
-                                        <Card>
+                                        <Card className='!min-w-[130px]'>
                                             <h3 className="calvino text-white">${dailyValue}</h3>
                                             <small className="source text-white">earning daily ($)</small>
                                         </Card>
@@ -1096,7 +1203,7 @@ function WealthMountain() {
                             </Card>
                             <Card body className="text-center text-lightblue card1">
                                 <h5 className="calvino font-bold text-2xl mt-2 mb-6">Referral Link</h5>
-                                <h3 type="button mb-4" onClick={() => navigator.clipboard.writeText("https://busd.wcminer.com?ref=" + userWalletAddress)} className="referralButton source font-weight-bold flex self-center"><FaCopy size="1.6em" className="pr-3" />COPY LINK</h3>
+                                <h3 type="button mb-4" onClick={() => navigator.clipboard.writeText("https://fundora.netlify.app/?ref=" + userWalletAddress)} className="referralButton source font-weight-bold flex self-center"><FaCopy size="1.6em" className="pr-3" />COPY LINK</h3>
                                 <small className="source text-lg">Earn 8% when someone uses your referral link.</small>
                             </Card>
                         </CardDeck>
@@ -1124,22 +1231,22 @@ function WealthMountain() {
                                                     </tr>
                                                     <tr>
                                                         <td>2</td>
-                                                        <td>Day 20 - 30</td>
+                                                        <td>Day 21 - 30</td>
                                                         <td>2% daily</td>
                                                     </tr>
                                                     <tr>
                                                         <td>3</td>
-                                                        <td>Day 30 - 40</td>
+                                                        <td>Day 31 - 40</td>
                                                         <td>3% daily</td>
                                                     </tr>
                                                     <tr>
                                                         <td>4</td>
-                                                        <td>Day 40 - 50</td>
+                                                        <td>Day 41 - 50</td>
                                                         <td>4% daily</td>
                                                     </tr>
                                                     <tr>
                                                         <td>♛ 5 </td>
-                                                        <td>Day 50 - ∞</td>
+                                                        <td>Day 51 - ∞</td>
                                                         <td>5% daily</td>
                                                     </tr>
                                                 </tbody>
@@ -1172,8 +1279,8 @@ function WealthMountain() {
                                                     </tr>
                                                 </tbody>
                                             </table> */}
-                                            <small className="text-white text-left text-sm mb-4">If withdrawal of capital before 50 days, penalty of 50% and withdrawal fees will apply.</small>
-                                            <small className="text-white text-left text-sm mb-4">You can withdraw initial deposit in 24 hours without paying the penalty fees</small>
+                                            <small className="text-white text-left text-sm mb-4">If withdrawal of capital before 50 days, withdrawal tax of 50% and withdrawal fees will apply.</small>
+                                            <small className="text-white text-left text-sm mb-4">You can withdraw initial deposit in 24 hours without paying the withdrawal tax</small>
                                             <small className="text-white text-left text-sm mb-4">Dividends earned are also paid out when unstakes take place.</small>
                                         </Card>
                                         <Card /*data-aos="fade-left" data-aos-duration="800"*/ className="p-3 card1">
@@ -1190,139 +1297,49 @@ function WealthMountain() {
                                 </Container>
                             </div>
                         </Parallax>
+                        
+                        <Parallax strength={500} className='mt-4 lg:mt-8'>
+                            <div className='calvino text-white text-3xl font-semibold px-4 pb-2 pt-4'>
+                                Features
+                            </div>
+                            <div>
+                                <Container className="pb-3 pt-3 calvino text-left">
+                                    <CardDeck>
+                                        <Card /*data-aos="fade-right" data-aos-duration="800" */ className="p-3 card1">
+                                            <h3 className='text-xl font-semibold border-solid border-b-2 border-[#f9c34e] pb-2'>Transparency</h3>
+                                            <small className="text-white text-left text-sm">Transparency is at the core of our values. We believe that investors deserve clear and open communication about their investments, which is why we provide comprehensive and real-time reporting on the performance of our trading and staking activities. You can track your earnings, monitor your staked assets, and access detailed analytics on our user-friendly platform. We strive to build trust with our investors by being transparent about our strategies, risks, and results.</small>
+                                            <br />
+                                        </Card>
+                                        <Card /*data-aos="fade-down" data-aos-duration="800"*/ className="p-3 card1">
+                                            <h3 className='text-xl font-semibold border-solid border-b-2 border-[#f9c34e] pb-2'>Staking</h3>
+                                            <small className="text-white text-left text-sm">Our AI trading bot, powered by advanced algorithms and machine learning, is constantly analyzing market trends, price movements, and other relevant data points to identify profitable trading opportunities. By leveraging the power of artificial intelligence, we aim to achieve consistent and sustainable returns for our investors. Our team of experienced professionals works closely with the AI bot to fine-tune strategies and optimize trading outcomes.</small>
+                                        </Card>
+                                        <Card /*data-aos="fade-left" data-aos-duration="800"*/ className="p-3 card1">
+                                            <h3 className='text-xl font-semibold border-solid border-b-2 border-[#f9c34e] pb-2'>Automation</h3>
+                                            <small className="text-white text-left text-sm">From the smart contract to the trading bots, everything is automated, resulting in zero downtime. This also helps us focus on more important things, such as customer service. Everything has been refined to its maximum efficiency, giving investors a smooth experience from deposit to withdrawal.</small>
+                                        </Card>
+                                    </CardDeck>
+                                </Container>
+                            </div>
+                        </Parallax>
                     </div>
-
-                    <TabPanel value={activeTab} selectedIndex={2}>
-                        <h4 className="pt-5 text-center text-white">(COMING SOON)</h4>
-                        <CardDeck className="p-5">
-
-                            <Card body className="text-center text-lightblue">
-                                <h4 className="calvino text-lightblue">LOTTERY</h4>
-
-                                <Box component="div" className='p-2 pb-5'>
-                                    <Grid
-                                        container
-                                        alignItems="center"
-                                        justifyContent="space-between"
-                                    >
-                                        <Typography style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
-                                            POT SIZE
-                                        </Typography>
-                                        <Typography className="text-white" style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
-                                            $0
-                                        </Typography>
-                                    </Grid>
-
-                                    <Grid
-                                        container
-                                        alignItems="center"
-                                        justifyContent="space-between"
-                                    >
-                                        <Typography style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
-                                            TOTAL PLAYERS
-                                        </Typography>
-                                        <Typography className="text-white" style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
-                                            0
-                                        </Typography>
-                                    </Grid>
-
-                                    <Grid
-                                        container
-                                        alignItems="center"
-                                        justifyContent="space-between"
-                                    >
-                                        <Typography style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
-                                            TOTAL TICKETS
-                                        </Typography>
-                                        <Typography className="text-white" style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
-                                            0
-                                        </Typography>
-                                    </Grid>
-
-                                    <Grid
-                                        container
-                                        alignItems="center"
-                                        justifyContent="space-between"
-                                    >
-                                        <Typography style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
-                                            MY TICKETS
-                                        </Typography>
-                                        <Typography className="text-white" style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
-                                            0
-                                        </Typography>
-                                    </Grid>
-
-                                    <Grid
-                                        container
-                                        alignItems="center"
-                                        justifyContent="space-between"
-                                    >
-                                        <Typography style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
-                                            PROBABILITY OF WINNING
-                                        </Typography>
-                                        <Typography className="text-white" style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
-                                            0
-                                        </Typography>
-                                    </Grid>
-
-                                    <Grid
-                                        container
-                                        alignItems="center"
-                                        justifyContent="space-between"
-                                    >
-                                        <Typography style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
-                                            PREVIOUS WINNER
-                                        </Typography>
-                                        <Typography className="text-white" style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
-                                            0
-                                        </Typography>
-                                    </Grid>
-
-                                    <Grid
-                                        container
-                                        alignItems="center"
-                                        justifyContent="space-between"
-                                    >
-                                        <Typography style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
-                                            PREVIOUS POT SIZE
-                                        </Typography>
-                                        <Typography className="text-white" style={{ fontFamily: 'Open Sans', fontSize: '16px', fontWeight: 'bold' }} gutterBottom>
-                                            0
-                                        </Typography>
-                                    </Grid>
-                                </Box>
-
-                                <Form>
-                                    <FormGroup>
-                                        <InputGroup>
-                                            <Input
-                                                className="custom-input text-center source"
-                                                placeholder="ENTER TICKETS AMOUNT"
-                                                disabled
-                                            ></Input>
-                                        </InputGroup>
-                                    </FormGroup>
-                                </Form>
-
-                                <Button className="custom-button source mt-3" style={{ width: '100%' }} outline onClick={() => { }} disabled>buy tickets</Button>
-                                <Button className="custom-button source mt-3" style={{ width: '100%' }} outline onClick={() => { }} disabled>collect winnings</Button>
-                                <Button className="custom-button source mt-3" style={{ width: '100%' }} outline onClick={() => { }} disabled>send to miner (100% bonus)</Button>
-                            </Card>
-                        </CardDeck>
-                    </TabPanel>
-
                 </Container>
             </div>
             
             <div className="text-center calvino text-lightblue">
                 <Card >
-                    {/* <CardDeck className="custom-footer">
-                        <a href="https://bscscan.com/address/0x73bE789711B4DF9a1102cf27995CabEd9F6cd2D5" target="_blank" rel="noreferrer"> CONTRACT </a>
-                        <a href="/whitepaper.pdf" target="_blank" rel="noreferrer"> DOCS </a>
-                        <a href="https://twitter.com/WolfOfCrypto885" target="_blank" rel="noreferrer"> TWITTER </a>
-                        <a href="https://t.me/WCMinerBUSD" target="_blank" rel="noreferrer"> TELEGRAM </a>
-                    </CardDeck> */}
                     <p style={{ fontSize: '20px', color: 'white', paddingTop: '30px', fontWeight: 'bold' }}>© Fundora Team.  All Rights Reserved</p>
+                    <CardDeck className="flex flex-row gap-16 justify-center items-end pb-8">
+                        <a href="https://testnet.bscscan.com/address/0x8e15CE05b65Bc0fAd8C010Dda0247b4c3e49acC9#code" target="_blank" rel="noreferrer"> 
+                            <img src={bscImg} width='32x' height='32x' alt='bsc'/>
+                        </a>
+                        <a href="https://twitter.com/" target="_blank" rel="noreferrer"> 
+                            <img src={twitterImg} width='32x' height='32x' alt='twitter'/>
+                        </a>
+                        <a href="https://t.me/" target="_blank" rel="noreferrer"> 
+                            <img src={telegramImg} width='32x' height='32x' alt='telegram'/>
+                        </a>
+                    </CardDeck>
                 </Card>
             </div>
         </>
