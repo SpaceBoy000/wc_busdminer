@@ -201,17 +201,19 @@ function WealthMountain() {
     const [web3, setWeb3] = useState(null);
     const [chainID, setChainID] = useState(0);
 
-    // const loadWeb3 = async () => {
-    //     try {
-    //       const client = new Web3(config.RPC_URL);
-    //       setWeb3(client);
-    //       // await getSiteInfo();
-    //     } catch (error) {
-    //       console.log('[loadWeb3 Error] => ', error);
-    //     }
-    // }
+    const loadWeb3 = async () => {
+        try {
+          const client = new Web3(config.RPC_URL);
+          setWeb3(client);
+          // await getSiteInfo();
+        } catch (error) {
+          console.log('[loadWeb3 Error] => ', error);
+        }
+    }
 
     const checkNetwork = async (web3Provider) => {
+        console.log("checkNetwork web3: ", web3);
+        console.log("checkNetwork web3Provider: ", web3Provider);
         if (!web3 || !web3Provider) return false;
         const network = await web3Provider.getNetwork();
         setChainID(network.chainId);
@@ -265,7 +267,15 @@ function WealthMountain() {
           }
         }
     }
-      
+
+    const shorten = (str) => {
+        return (str.slice(0, 6) + "..." + str.slice(38))
+    }
+
+    useEffect(() => {
+        console.log("Userwalletaddress2: ", userWalletAddress);
+        recalculateInfo();
+    }, [userWalletAddress]);
     const connectWallet = async () => {
         try {
             const provider = await web3Modal.connect();
@@ -282,14 +292,15 @@ function WealthMountain() {
             console.log("connectWallet address: ", accounts[0]);
             if (accounts[0] !== 'none') {
                 console.log("xxxxxxxxxxx: ", userWalletAddress);
-                setConnectButtonText(accounts[0].slice(0, 6) + "..." + accounts[0].slice(38))
+                setConnectButtonText(shorten(accounts[0]))
                 recalculateInfo();
             }
 
             provider.on("accountsChanged", async function (accounts) {
                 if (accounts[0] !== undefined) {
+                    console.log("accountchanged: ", accounts[0]);
                     setUserWalletAddress(accounts[0]);
-                    setConnectButtonText(accounts[0].slice(0, 6) + "..." + accounts[0].slice(38))
+                    setConnectButtonText(shorten(accounts[0]))
                     recalculateInfo();
                 } else {
                     setUserWalletAddress('');
@@ -302,7 +313,6 @@ function WealthMountain() {
 
               provider.on('disconnect', function (error) {
                 setUserWalletAddress('');
-                // initializeBalance();
               });
         } catch (error) {
             console.log('[connectWallet Error] => ', error);
@@ -389,21 +399,23 @@ function WealthMountain() {
 
     useEffect(() => {
         const init = async () => {
+            console.log("init...");
+            loadWeb3();
             var provider = new ethers.providers.Web3Provider(window.ethereum)
             var signer = provider.getSigner()
             setSigner(signer)
+            console.log("init signer: ", signer);
             var contract = new Contract(
                 wealthContract,
                 wealthMountainABI,
                 signer
             )
             setContract(contract)
-            setUserWalletAddress(provider.provider.selectedAddress);
-            getAllBuyAndSellReceipts(wealthContract, userWalletAddress);
-            // videoRef.current.play().catch(error => {
-            //     console.log("Play error = ", error);
-            // });
-
+            if (provider.provider.selectedAddress != null) {
+                setUserWalletAddress(provider.provider.selectedAddress);
+                console.log("init address: ", provider.provider.selectedAddress);
+                setConnectButtonText(shorten(provider.provider.selectedAddress));
+            }
         };
         init();
     }, []);
@@ -704,30 +716,35 @@ function WealthMountain() {
     }
 
     async function approveButton() {
-        const tx = stablecoinContract.approve(contract.address, String(ethers.utils.parseEther(stakingAmount)));
+        const tx = await stablecoinContract.approve(contract.address, String(ethers.utils.parseEther(stakingAmount)));
         tx.wait().then(() => {
             recalcAllowance();
             toast.success('Successfully approved!')
-        })
+        }).catch((err) => {
+            console.error("approve fail: ", err);
+            toast.warn('Aapprove Failed!');
+        }) 
     }
     async function stakeAmount() {
         if (Number(stakingAmount) < Number(10)) {
             alert('Minimum stake amount not met.')
         }
 
+        console.log("stakeAmount: ", stakingAmount);
         const ref = window.location.search;
         const referralAddress = String(ref.replace('?ref=', ''))
         console.log("referralAddress: ", referralAddress);
-        // if (referralAddress === 'null' || referralAddress.includes("0x") === false) {
-        //     const tx = await contract.Deposit(
-        //         String(ethers.utils.parseEther(stakingAmount)), String("0x7419189d0f5B11A1303978077Ce6C8096d899dAd"));
-        // } else {
-            const tx = await contract.Deposit(
-                String(ethers.utils.parseEther(stakingAmount)), String(referralAddress));
-            tx.wait().then(() => { });
-        // }
+        let tx;
+        if (referralAddress === 'null' || referralAddress.includes("0x") === false) {
+            tx = await contract.Deposit(String(ethers.utils.parseEther(stakingAmount)), String("0x0000000000000000000000000000000000000000"));
+        } else {
+            tx = await contract.Deposit(String(ethers.utils.parseEther(stakingAmount)), String(referralAddress));
+        }
 
-        toast.success('Successfully Deposited!')
+        tx.wait().then(() => { 
+            recalculateInfo();    
+            toast.success('Successfully Deposited!')
+        });
     }
     async function stakeRefBonus() {
         const tx = await contract.stakeRefBonus();
@@ -879,7 +896,7 @@ function WealthMountain() {
             }
         )
         return (
-            <>
+            <div className='overflow-x-scroll md:overflow-x-hidden'>
                 <Table striped>
                     <thead>
                         <tr className="text-lightblue calvino">
@@ -894,7 +911,7 @@ function WealthMountain() {
                         {listElements}
                     </tbody>
                 </Table>
-            </>
+            </div>
         )
     }
 
