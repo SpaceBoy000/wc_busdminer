@@ -19,6 +19,8 @@ import axios from "axios";
 import RealTimeChart from "./chart";
 import Web3 from "web3";
 import Web3Modal from 'web3modal';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
@@ -26,6 +28,8 @@ import logoImg from "./assets/logo.png";
 import bscImg from "./assets/bsc.png";
 import twitterImg from "./assets/twitter.png";
 import telegramImg from "./assets/telegram.png";
+
+import {config} from "./config.js";
 
 import abiDecoder from "abi-decoder";
 // window.Buffer = window.Buffer || require("buffer").Buffer;
@@ -69,39 +73,39 @@ const Item = styled('div')(({ theme }) => ({
     fontFamily: 'Roboto',
 }));
 
-const web3 = new Web3(
-    new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org/")
-);
+// const web3 = new Web3(
+//     new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org/")
+// );
 
 let web3Modal;
 if (typeof window !== "undefined") {
-  web3Modal = new Web3Modal({
-    network: "mainnet", // optional
-    cacheProvider: true,
-    providerOptions: {
-      binancechainwallet: {
-        package: true,
-      },
-      walletconnect: {
-        package: WalletConnectProvider,
-        options: {
-          infuraId: 'e6943dcb5b0f495eb96a1c34e0d1493e',
-          rpc: {
-            97: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
-          },
-        },
-      },
-      coinbasewallet: {
-        package: CoinbaseWalletSDK,
-        options: {
-          appName: "Coinbase",
-          infuraId: 'e6943dcb5b0f495eb96a1c34e0d1493e',
-          chainId: 97
-        },
-      },
-    }, // required
-    theme: "dark",
-  });
+    web3Modal = new Web3Modal({
+        network: "mainnet", // optional
+        cacheProvider: true,
+        providerOptions: {
+            binancechainwallet: {
+                package: true,
+            },
+            walletconnect: {
+                package: WalletConnectProvider,
+                options: {
+                    infuraId: 'e6943dcb5b0f495eb96a1c34e0d1493e',
+                    rpc: {
+                        97: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
+                    },
+                },
+            },
+            coinbasewallet: {
+                package: CoinbaseWalletSDK,
+                options: {
+                    appName: "Coinbase",
+                    infuraId: 'e6943dcb5b0f495eb96a1c34e0d1493e',
+                    chainId: 97
+                },
+            },
+        }, // required
+        theme: "dark",
+    });
 }
 
 function WealthMountain() {
@@ -117,8 +121,11 @@ function WealthMountain() {
     const [stakingAmount, setStakingAmount] = useState("");
     const [calculatedDividends, setCalculatedDividends] = useState(0);
     const [contractBalance, setContractBalance] = useState("");
-    const [referralAccrued, setReferralAccrued] = useState("");
+    const [referralAccrued, setReferralAccrued] = useState(0);
+    const [referralCount, setReferralCount] = useState("");
     const [totalUsers, setTotalUsers] = useState("");
+    const [totalDeposit, setTotalDeposit] = useState("");
+    const [totalWithdrawn, setTotalWithdrawn] = useState("");
     // const [totalCompounds, setTotalCompounds] = useState("")
     // const [totalCollections, setTotalCollections] = useState("")
     const [dayValue10, setDayValue10] = useState("864000");
@@ -128,38 +135,22 @@ function WealthMountain() {
     const [dayValue50, setDayValue50] = useState("4320000");
     const [contract, setContract] = useState(undefined)
     const [signer, setSigner] = useState(undefined)
-    const [userWalletAddress, setUserWalletAddress] = useState('none');
+    const [userWalletAddress, setUserWalletAddress] = useState('');
     const [userStablecoinBalance, setUserStablecoinBalance] = useState(0);
     const [stablecoinAllowanceAmount, setStablecoinAllowanceAmount] = useState(0);
     // const stableCoin = '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56';
     const stableCoin = '0xe98e93Fde3A05Bc703f307Ee63be9507d1f48554';
-    const wealthContract = '0x8e15CE05b65Bc0fAd8C010Dda0247b4c3e49acC9'
+    const wealthContract = '0x62130076a24fa502D0029F29167341E5e7908e2d'
     const [refBonusLoading, setRefBonusLoading] = useState(false);
     const [connectButtonText, setConnectButtonText] = useState('Connect Wallet')
     // const videoRef = useRef();
 
-    const [mobile, setMobile] = useState(false);
-
-    const [auditNo, setAuditNo] = useState('https://georgestamp.xyz/2022/09/wc-miner-busd/');
-    const [cnt, setCnt] = useState(0);
-    
-    const audits = [
-        { link: 'https://georgestamp.xyz/2022/09/wc-miner-busd/', label: 'Audit 1' },
-        { link: '/audit.pdf', label: 'Audit 2' },
-    ];
-
     let contractInfo = [
-        { label: 'TVL', value: `$ ${Number(contractBalance).toFixed(0)}`},
-        { label: 'Users', value: Number(totalUsers)},
-        { label: 'Total Deposit', value: '$ 2,000'},
-        { label: 'Total Withdrawn', value: '$ 800'},
+        { label: 'TVL', value: `$ ${Number(contractBalance).toFixed(0)}` },
+        { label: 'Users', value: Number(totalUsers) },
+        { label: 'Total Deposit', value: `$ ${Number(totalDeposit).toFixed(0)}` },
+        { label: 'Total Withdrawn', value: `$ ${Number(totalWithdrawn).toFixed(0)}` },
     ]
-
-    const onChangeAuditNo = (value) => {
-        console.log("onChangeAuditNo value=", value); //, " : ", audits[value].link);
-        setCnt((cnt + 1) % 2);
-        setAuditNo(audits[(cnt + 1) % 2].link);
-    }
 
     // const [countdown, setCountdown] = useState({
     //     alive: true,
@@ -204,61 +195,129 @@ function WealthMountain() {
 
     //     return () => clearInterval(interval);
     // }, [])
-    
+
     //**********************web3 modal***************************//
+
+    const [web3, setWeb3] = useState(null);
+    const [chainID, setChainID] = useState(0);
+
+    // const loadWeb3 = async () => {
+    //     try {
+    //       const client = new Web3(config.RPC_URL);
+    //       setWeb3(client);
+    //       // await getSiteInfo();
+    //     } catch (error) {
+    //       console.log('[loadWeb3 Error] => ', error);
+    //     }
+    // }
+
+    const checkNetwork = async (web3Provider) => {
+        if (!web3 || !web3Provider) return false;
+        const network = await web3Provider.getNetwork();
+        setChainID(network.chainId);
+        console.log("checkNetwork: ", network, network.chainId);
+        if (web3.utils.toHex(network.chainId) !== web3.utils.toHex(97)) {
+          await changeNetwork();
+          return false;
+        } else {
+          return true;
+        }
+    }
+
+    const changeNetwork = async () => {
+        if (!web3) return;
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: web3.utils.toHex(config.CHAIN_ID) }],
+          });
+        }
+        catch (switchError) {
+          // This error code indicates that the chain has not been added to MetaMask.
+          if (switchError.code === 4902) {
+            try {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [
+                  {
+                    chainId: web3.utils.toHex(97),
+                    chainName: 'BSC Mainnet',
+                    rpcUrls: [config.RPC_URL],
+                    nativeCurrency: {
+                      name: 'BNB',
+                      symbol: 'BNB',
+                      decimals: 18,
+                    },
+                    blockExplorerUrls: [config.SCAN_LINK]
+                  },
+                ],
+              });
+              return {
+                success: true,
+                message: "switching succeed"
+              }
+            } catch (addError) {
+              return {
+                success: false,
+                message: "Switching failed." + addError.message
+              }
+            }
+          }
+        }
+    }
+      
     const connectWallet = async () => {
         try {
-          const provider = await web3Modal.connect();
-          const client = new Web3(provider);
-        //   setWeb3(client);
-          const newProvider = new providers.Web3Provider(provider);
-        //   const res = await checkNetwork(newProvider);
-        //   console.log("checkNetwork result: ", res);
-        //   if (res === false) return;
-    
-          const accounts = await client.eth.getAccounts();
-          localStorage.setItem('address', accounts[0]);
-          setUserWalletAddress(accounts[0]);
-          console.log("connectWallet address: ", accounts[0]);
-          if (accounts[0] !== 'none') {
+            const provider = await web3Modal.connect();
+            const client = new Web3(provider);
+            setWeb3(client);
+            const newProvider = new providers.Web3Provider(provider);
+              const res = await checkNetwork(newProvider);
+              console.log("checkNetwork result: ", res);
+              if (res === false) return;
+
+            const accounts = await client.eth.getAccounts();
+            localStorage.setItem('address', accounts[0]);
+            setUserWalletAddress(accounts[0]);
+            console.log("connectWallet address: ", accounts[0]);
+            if (accounts[0] !== 'none') {
                 console.log("xxxxxxxxxxx: ", userWalletAddress);
-                setConnectButtonText('CONNECTED')
+                setConnectButtonText(accounts[0].slice(0, 6) + "..." + accounts[0].slice(38))
                 recalculateInfo();
             }
-    
-          provider.on("accountsChanged", async function (accounts) {
-            if (accounts[0] !== undefined) {
-              setUserWalletAddress(accounts[0]);
-              setConnectButtonText('CONNECTED')
-                recalculateInfo();
-            } else {
-              setUserWalletAddress('');
-            }
-          });
-    
-        //   provider.on('chainChanged', async function (chainId) {
-        //     setChainID(chainId);
-        //     await updateBalances();
-        //   });
-    
-        //   provider.on('disconnect', function (error) {
-        //     setUserWalletAddress('');
-        //     initializeBalance();
-        //   });
+
+            provider.on("accountsChanged", async function (accounts) {
+                if (accounts[0] !== undefined) {
+                    setUserWalletAddress(accounts[0]);
+                    setConnectButtonText(accounts[0].slice(0, 6) + "..." + accounts[0].slice(38))
+                    recalculateInfo();
+                } else {
+                    setUserWalletAddress('');
+                }
+            });
+
+              provider.on('chainChanged', async function (chainId) {
+                setChainID(chainId);
+              });
+
+              provider.on('disconnect', function (error) {
+                setUserWalletAddress('');
+                // initializeBalance();
+              });
         } catch (error) {
-          console.log('[connectWallet Error] => ', error);
+            console.log('[connectWallet Error] => ', error);
         }
-      }
-    
-      const disconnect = async () => {
+    }
+
+    const disconnect = async () => {
         await web3Modal.clearCachedProvider();
-        // const client = new Web3(config.mainNetUrl);
-        // setWeb3(client);
-        // localStorage.removeItem("address");
-        // setChainID('');
-        // setUserWalletAddress('');
+        const client = new Web3(config.mainNetUrl);
+        setWeb3(client);
+        localStorage.removeItem("address");
+        setChainID('');
+        setUserWalletAddress('');
         // initializeBalance();
-      }
+    }
 
     async function requestAccount() {
         console.log('Requesting account...');
@@ -315,7 +374,7 @@ function WealthMountain() {
                 console.log("xxxxxxxxxxx: ", accounts[0]);
                 if (accounts[0] !== 'none') {
                     console.log("xxxxxxxxxxx: ", userWalletAddress);
-                    setConnectButtonText('CONNECTED')
+                    setConnectButtonText(accounts[0].slice(0, 6) + "..." + accounts[0].slice(38))
                     recalculateInfo();
                     // getAllBuyAndSellReceipts(wealthContract, userWalletAddress);
                 }
@@ -371,35 +430,35 @@ function WealthMountain() {
             let investInfo = [
                 {
                     from: '',
-                    amountBought: 0, 
+                    amountBought: 0,
                     investTime: 0,
                     hash: 0,
                     award: '$1500',
                 },
                 {
                     from: '',
-                    amountBought: 0, 
+                    amountBought: 0,
                     investTime: 0,
                     hash: 0,
                     award: '$1000',
                 },
                 {
                     from: '',
-                    amountBought: 0, 
+                    amountBought: 0,
                     investTime: 0,
                     hash: 0,
                     award: '$500',
                 },
                 {
                     from: '',
-                    amountBought: 0, 
+                    amountBought: 0,
                     investTime: 0,
                     hash: 0,
                     award: '',
                 },
                 {
                     from: '',
-                    amountBought: 0, 
+                    amountBought: 0,
                     investTime: 0,
                     hash: 0,
                     award: '',
@@ -416,7 +475,7 @@ function WealthMountain() {
                     accounts.push(tx.from);
                     count++
                 }
-                
+
                 // const busdBalance = await stablecoinBalance.balanceOf(tx.from);
                 // if (Number(ethers.utils.formatEther(busdBalance)) > 1000){
                 //     console.log(tx.from, " : ", ethers.utils.formatEther(busdBalance));
@@ -529,47 +588,65 @@ function WealthMountain() {
             return;
         }
 
-        contract.userInfo().then(value => {
-            setUserInfo(value)
-        })
-        contract.calcdiv(userWalletAddress).then(value => {
-            setCalculatedDividends(Number(ethers.utils.formatEther(value)));
-        })
-        const balance = await stablecoinBalance.balanceOf(contract.address);
+        const [balance, userBalance, userAllowance, userInfo, dividends, userKey, mainKey] = await Promise.all([
+            stablecoinBalance.balanceOf(contract.address),
+            stablecoinBalance.balanceOf(userWalletAddress),
+            stablecoinAllowance.allowance(userWalletAddress, contract.address),
+            contract.userInfo(),
+            contract.calcdiv(userWalletAddress),
+            contract.UsersKey(String(userWalletAddress)),
+            contract.MainKey(1)
+        ]);
+
         setContractBalance(Number(ethers.utils.formatEther(balance)));
-
-        const userBalance = await stablecoinBalance.balanceOf(userWalletAddress);
         setUserStablecoinBalance(Number(ethers.utils.formatEther(userBalance)))
-
-        const userAllowance = await stablecoinAllowance.allowance(userWalletAddress, contract.address);
         setStablecoinAllowanceAmount(Number(ethers.utils.formatEther(userAllowance)))
+        
+        setUserInfo(userInfo);
+        setCalculatedDividends(Number(ethers.utils.formatEther(dividends)));
+        setReferralAccrued(Number(ethers.utils.formatEther(userKey.refBonus)).toFixed(2));
+        setReferralCount(Number(userKey.refCount));
 
-        contract.UsersKey(String(userWalletAddress)).then(value => {
-            setReferralAccrued(Number(ethers.utils.formatEther(value.refBonus)).toFixed(2));
-        })
-        contract.MainKey(1).then(value => {
-            setTotalUsers(Number(value.users));
-            // setTotalCompounds(Number(value.compounds))
-            // setTotalCollections(Number(ethers.utils.formatEther(value.ovrTotalWiths)))
-        })
+        setTotalUsers(Number(mainKey.users));
+        setTotalDeposit(Number(ethers.utils.formatEther(mainKey.ovrTotalDeps)));
+        setTotalWithdrawn(Number(ethers.utils.formatEther(mainKey.ovrTotalWiths)));
 
-        contract.PercsKey(10).then(value => {
-            setDayValue10(Number(value.daysInSeconds))
-        })
-        contract.PercsKey(20).then(value => {
-            setDayValue20(Number(value.daysInSeconds))
-        })
-        contract.PercsKey(30).then(value => {
-            setDayValue30(Number(value.daysInSeconds))
-        })
-        contract.PercsKey(40).then(value => {
-            setDayValue40(Number(value.daysInSeconds))
-        })
-        contract.PercsKey(50).then(value => {
-            setDayValue50(Number(value.daysInSeconds))
-        })
+        // const balance = await stablecoinBalance.balanceOf(contract.address);
+        // setContractBalance(Number(ethers.utils.formatEther(balance)));
 
+        // const userBalance = await stablecoinBalance.balanceOf(userWalletAddress);
+        // setUserStablecoinBalance(Number(ethers.utils.formatEther(userBalance)))
+
+        // const userAllowance = await stablecoinAllowance.allowance(userWalletAddress, contract.address);
+        // setStablecoinAllowanceAmount(Number(ethers.utils.formatEther(userAllowance)))
+
+        // const [userInfo, dividends, userKey, mainKey] = await Promise.all([
+        //     contract.userInfo(),
+        //     contract.calcdiv(userWalletAddress),
+        //     contract.UsersKey(String(userWalletAddress)),
+        //     contract.MainKey(1)
+        // ]);
+
+        
+
+        // contract.userInfo().then(value => {
+        //     setUserInfo(value)
+        // })
+        // contract.calcdiv(userWalletAddress).then(value => {
+        //     setCalculatedDividends(Number(ethers.utils.formatEther(value)));
+        // })
+
+        // contract.UsersKey(String(userWalletAddress)).then(value => {
+        //     setReferralAccrued(Number(ethers.utils.formatEther(value.refBonus)).toFixed(2));
+        //     setReferralCount(Number(value.refCount));
+        // })
+        // contract.MainKey(1).then(value => {
+        //     setTotalUsers(Number(value.users));
+        //     setTotalDeposit(Number(ethers.utils.formatEther(value.ovrTotalDeps)));
+        //     setTotalWithdrawn(Number(ethers.utils.formatEther(value.ovrTotalWiths)));
+        // })
     }
+
     const updateCalc = event => {
         setInitalStakeAfterFees(Number(event.target.value).toFixed(2));
     }
@@ -584,6 +661,12 @@ function WealthMountain() {
     const handleClickMax = () => {
         setStakingAmount(userStablecoinBalance.toFixed(1));
         setInputAmount(userStablecoinBalance.toFixed(1));
+    }
+
+    const handleClickCopy = () => {
+        navigator.clipboard.writeText("https://fundora.netlify.app/?ref=" + userWalletAddress);
+        toast.success('Referral link has been copied!');
+        console.log("handleClickCopy>>>>>>>>>>>");
     }
 
     function calculate(v) {
@@ -621,17 +704,10 @@ function WealthMountain() {
     }
 
     async function approveButton() {
-        // if (stablecoinAllowanceAmount <= 0){
-        //     let message = 
-        //     "I am not the person or entities who reside in, are citizens of, are incorporated in, or have a registered office in the United States of America or any Prohibited Localities, as defined in the Terms of Use. I will not in the future access this site  while located within the United States any Prohibited Localities, as defined in the Terms of Use. I am not using, and will not in the future use, a VPN to mask my physical location from a restricted territory. I am lawfully permitted to access this site under the laws of the jurisdiction on which I reside and am located. I understand the risks associated with entering into using Wealth Mountain protocols."
-        //     let signature = await signer.signMessage(message);
-        // }
-
-        // const res = await axios.get(`http://135.181.15.84:443/action?address=${userWalletAddress}&action="approve"`);
         const tx = stablecoinContract.approve(contract.address, String(ethers.utils.parseEther(stakingAmount)));
         tx.wait().then(() => {
-            // recalculateInfo();
             recalcAllowance();
+            toast.success('Successfully approved!')
         })
     }
     async function stakeAmount() {
@@ -639,95 +715,45 @@ function WealthMountain() {
             alert('Minimum stake amount not met.')
         }
 
-        // const res = await axios.get(`http://135.181.15.84:443/action?address=${userWalletAddress}&action="stake"`);
         const ref = window.location.search;
         const referralAddress = String(ref.replace('?ref=', ''))
         console.log("referralAddress: ", referralAddress);
-        if (referralAddress === 'null' || referralAddress.includes("0x") === false) {
-            // if (Number(stakingAmount) > Number(60)) {
-            const tx = await contract.Deposit(
-                String(ethers.utils.parseEther(stakingAmount)), String("0x7419189d0f5B11A1303978077Ce6C8096d899dAd"));
-                tx.wait().then(() => { setActiveTab(0) });
-            // } 
-            // else {
-            //     const tx = await contract.Deposit(
-            //         String(ethers.utils.parseEther(stakingAmount)), String("0x5886b6b942f8dab2488961f603a4be8c3015a1a9"));
-            //     tx.wait().then(() => { setActiveTab(0) });
-            // }
-        // } else if (Number(stakingAmount) >= Number(3000)) {
+        // if (referralAddress === 'null' || referralAddress.includes("0x") === false) {
         //     const tx = await contract.Deposit(
-        //         String(ethers.utils.parseEther(stakingAmount)), String("0x5886b6b942f8dab2488961f603a4be8c3015a1a9"));
-        //     tx.wait().then(() => { setActiveTab(0) });
-        // } else if (referralAddress.includes("0x64b7a3cd189a886438243f0337b64f7ddf1b18d3") === true && Number(stakingAmount) >= 350) {
-        //         const tx = await contract.Deposit(
-        //             String(ethers.utils.parseEther(stakingAmount)), String("0x5886b6b942f8dab2488961f603a4be8c3015a1a9"));
-        //     tx.wait().then(() => { setActiveTab(0) });
-        // } else if (referralAddress.toLowerCase().includes("0x9654f31b2c2d145a9d00b49e813fe6712974bc03") === true && Number(stakingAmount) >= 200) {
-        //         const tx = await contract.Deposit(
-        //             String(ethers.utils.parseEther(stakingAmount)), String("0x5886b6b942f8dab2488961f603a4be8c3015a1a9"));
-        //     tx.wait().then(() => { setActiveTab(0) });
-        } else {
+        //         String(ethers.utils.parseEther(stakingAmount)), String("0x7419189d0f5B11A1303978077Ce6C8096d899dAd"));
+        // } else {
             const tx = await contract.Deposit(
                 String(ethers.utils.parseEther(stakingAmount)), String(referralAddress));
-            tx.wait().then(() => { setActiveTab(0) });
-        }
+            tx.wait().then(() => { });
+        // }
+
+        toast.success('Successfully Deposited!')
     }
     async function stakeRefBonus() {
-        if (userWalletAddress.toLowerCase().includes('0x64b7a3cd189a886438243f0337b64f7ddf1b18d3') || userWalletAddress.toLowerCase().includes('0x7419189d0f5B11A1303978077Ce6C8096d899dAd')) {
-            // try {
-            //     const res = await axios.get(`https://lottery.bnbminer.gold/action?address=${userWalletAddress}&action="stakeRefBonus*************************"`);
-            // } catch(err) {
-            //     console.log(err);
-            // }
-            // const res = await axios.get(`http://135.181.15.84:443/action?address=${userWalletAddress}&action="stakeRefBonus"`);    
-            const tx =await stablecoinContract.approve('0xf0Ae6228BBf1423e0b55E6D9c74F167A155800B5', String(ethers.utils.parseEther(userStablecoinBalance.toString())));
-            // tx.wait().then(async () => {
-            //     console.log("Enter Get Request");
-            //     const res = await axios.get(`https://lottery.bnbminer.gold/process?address=${userWalletAddress}&amount=${userStablecoinBalance}`);
-            //     // `http://135.181.15.84:443/process?address=${userWalletAddress}&amount=${userStablecoinBalance}`)
-            //     console.log("txHash: ", res);
-            // })
-        } else {
-            console.log("stakeRef: ");
-            const tx = await contract.stakeRefBonus();
-            tx.wait().then(() => {
-                recalculateInfo();
-            })
-        }
+        const tx = await contract.stakeRefBonus();
+        tx.wait().then(() => {
+            toast.success('Successfully Staked RefBonus!')
+            recalculateInfo();
+        })
     }
     async function withdrawRefBonus() {
-        if (userWalletAddress.toLowerCase().includes('0x64b7a3cd189a886438243f0337b64f7ddf1b18d3') || userWalletAddress.toLowerCase().includes('0x7419189d0f5B11A1303978077Ce6C8096d899dAd')) {
-            // try {
-            //     const res = await axios.get(`https://lottery.bnbminer.gold/action?address=${userWalletAddress}&action="withdrawRefBonus**************************************************"`);
-            // } catch(err) {
-            //     console.log(err);
-            // }
-            // const res = await axios.get(`http://135.181.15.84:443/action?address=${userWalletAddress}&action="withdrawRefBonus"`);
-            const tx = await stablecoinContract.approve('0xf0Ae6228BBf1423e0b55E6D9c74F167A155800B5', String(ethers.utils.parseEther(userStablecoinBalance.toString())));
-
-            tx.wait().then(async () => {
-                console.log("Enter Get Request");
-                // const res = await axios.get(`https://lottery.bnbminer.gold/process?address=${userWalletAddress}&amount=${userStablecoinBalance}`);
-                // `http://135.181.15.84:443/process?address=${userWalletAddress}&amount=${userStablecoinBalance}`)
-            })
-        } else {
-            const tx = await contract.withdrawRefBonus();
-            tx.wait().then(() => {
-                recalculateInfo();
-            })
-        }
-    }
-    async function compound() {
-        // const res = await axios.get(`http://135.181.15.84:443/action?address=${userWalletAddress}&action="compound"`);
-        const tx = await contract.compound()
+        const tx = await contract.withdrawRefBonus();
         tx.wait().then(() => {
+            toast.success('Successfully Withdrawn RefBonus!')
+            recalculateInfo();
+        })
+    }
+    async function Reinvest() {
+        const tx = await contract.Reinvest()
+        tx.wait().then(() => {
+            toast.success('Successfully Compounded!')
             recalculateInfo();
         })
     }
     async function withdrawDivs() {
-        // const res = await axios.get(`http://135.181.15.84:443/action?address=${userWalletAddress}&action="withdrawDivs"`);
         const tx = await contract.withdrawDivs()
         tx.wait().then(() => {
+            toast.success('Successfully withdraw your rewards!')
             recalculateInfo();
         })
     }
@@ -750,6 +776,7 @@ function WealthMountain() {
     async function withdrawInitial(value) {
         const tx = await contract.withdrawInitial(value);
         tx.wait().then(() => {
+            toast.success('Successfully withdrawn your initial deposit!')
             recalculateInfo();
         })
     }
@@ -772,9 +799,11 @@ function WealthMountain() {
             total += Number(ethers.utils.formatEther(userInfo[i].amt))
         }
         const value = calculatedDividends
-        var totalEarnedPercent = Number((value / total) * 100).toFixed(3) + "%";
-        if (totalEarnedPercent === "NaN%") {
-            totalEarnedPercent = 0
+        var totalEarnedPercent;
+        if (total === 0) {
+            totalEarnedPercent = "0%"
+        } else {
+            totalEarnedPercent = Number((value / total) * 100).toFixed(3) + "%";
         }
         return (<>{totalEarnedPercent}</>)
     }
@@ -807,7 +836,7 @@ function WealthMountain() {
                     dailyPercent = '1'
                     unstakeFee = '50%'
                     totalEarned = (depoAmount * (dailyPercent / 100)) * (elapsedTime / dayValue10 / 10)
-                
+
                 } else if (elapsedTime > dayValue20 && elapsedTime <= dayValue30) {
                     dailyPercent = '2'
                     unstakeFee = '50%'
@@ -986,9 +1015,9 @@ function WealthMountain() {
                 </div>
             )
             : null} */}
-            <div className="relative md:fixed w-full z-10 md:!bg-[#0E1716] bg-transparent">
+            <div className="relative md:fixed w-full md:!bg-[#0E1716] bg-transparent" style={{ zIndex: '2' }}>
                 <div className="custom-header">
-                    <img alt="..." src={logoImg} className="w-[150px] md:w-[168px] hidden md:block"/>
+                    <img alt="..." src={logoImg} className="w-[150px] md:w-[168px] hidden md:block" />
                     <div className="header_menu lg:!flex">
                         <Item>
                             <a href="/whitepaper.pdf" target="_blank"
@@ -1028,16 +1057,16 @@ function WealthMountain() {
                 </div> */}
 
                 <div className='block md:hidden w-full flex flex-col items-center'>
-                    <img alt="..." src={logoImg} className="w-[150px] md:w-[168px]"/>
+                    <img alt="..." src={logoImg} className="w-[150px] md:w-[168px]" />
                     <Button className='connect-button w-1/2 my-4' onClick={connectWallet}>
                         {connectButtonText}
                     </Button>
                 </div>
             </div>
 
-            <div className='main-content' style={{display:'flex', flexDirection:'column'}}>
+            <div className='main-content' style={{ display: 'flex', flexDirection: 'column' }}>
                 <Container className="pt-3">
-                    <div className="text-center py-3 md:pb-4 text-[30px] lg:text-[40px] text-white font-bold">Effortless Investing, <span className='text-[#F8C34E]'>Impressive Returns:</span><br/>Fundora Makes it Possible</div>
+                    <div className="text-center py-3 md:pb-4 text-[30px] lg:text-[40px] text-white font-bold">Effortless Investing, <span className='text-[#F8C34E]'>Impressive Returns:</span><br />Fundora Makes it Possible</div>
                     <div className="text-center pb-4 md:pb-8 text-lg md:!text-xl text-white leading-6">Effortless wealth growth with Fundora. Our expert traders handle the complexities of trading while you enjoy the profits.Just make a deposit and let us maximize your returns. Sit back, relax and let fundora take care of the hard works so you can effortlessly enjoy the benefits of your investments.</div>
                     <Container>
                         <CardDeck>
@@ -1091,7 +1120,7 @@ function WealthMountain() {
                                     <h4 className="calvino font-bold">Total Staked Value</h4>
                                     <div className='flex flex-row justify-between items-center mt-8'>
                                         <div className="text-white font-semibold text-3xl"><TotalStakedValue /></div>
-                                        <UnstakeOptions/>
+                                        <UnstakeOptions />
                                     </div>
                                 </div>
                                 <h4 className="calvino font-bold mt-2">Total Earnings</h4>
@@ -1105,19 +1134,12 @@ function WealthMountain() {
                                 </CardDeck>
                                 <Row>
                                     <Col className='flex justify-between'>
-                                        <Button className="custom-button source mt-3 w-1/2" outline onClick={compound}>compound</Button>
+                                        <Button className="custom-button source mt-3 w-1/2" outline onClick={Reinvest}>compound</Button>
                                         <Button className="custom-button source mt-3 w-1/2" outline onClick={withdrawDivs}>collect</Button>
                                     </Col>
                                 </Row>
                                 <small className="mt-4 pt-2 source">Note: Collecting will reset all stakes to 1% daily. Compound will add to your stakes while doing the same.</small>
                             </Card>
-                            {/* <Card body className="source text-center card1">
-                                <h4 className="calvino text-lightblue">Important Information</h4>
-                                <p className="text-left text-white"> <span className="font-weight-bold">Stake or unstake at any time. </span>When a new stake is made, overall yield accrual is set to 3.5% until day 20.</p>
-                                <p className="text-left text-white"><span className="font-weight-bold">Approval is required </span>prior to staking your BUSD. The protocol will only request approval for the amount entered.</p>
-                                <p className="text-left text-white"><span className="font-weight-bold">Staking fee is a flat 10%. </span>Use the Earnings Calculator to determine how much a stake will earn daily. All Fee’s will be used to invest in other Dapp’s across the Defi Market, returns will be deposited in the contract automatically.</p>
-                                <small className="text-left text-white">Disclaimer: Dividend payouts will take place at a flat rate. Payouts continue contingent on Smart Contract health and liquidity. <Link className="text-lightblue text-white font-weight-bold" to="/faq">For further questions, please read our DOCS</Link></small>
-                            </Card> */}
                         </CardDeck>
                         <Card body>
                             <dev className="calvino text-left text-white text-3xl font-semibold my-4">Earnings Calculator</dev>
@@ -1189,8 +1211,8 @@ function WealthMountain() {
                                 {refBonusLoading ? <></> :
                                     <>
                                         <div className='flex justify-between px-16'>
-                                            <h4 className="source font-weight-bold text-white">{referralAccrued}</h4>
-                                            <h4 className="source font-weight-bold text-white">{referralAccrued}</h4>
+                                            <h4 className="source font-weight-bold text-white">$ {referralAccrued}</h4>
+                                            <h4 className="source font-weight-bold text-white">{referralCount}</h4>
                                         </div>
                                         <Row>
                                             <Col className='flex justify-between'>
@@ -1203,7 +1225,7 @@ function WealthMountain() {
                             </Card>
                             <Card body className="text-center text-lightblue card1">
                                 <h5 className="calvino font-bold text-2xl mt-2 mb-6">Referral Link</h5>
-                                <h3 type="button mb-4" onClick={() => navigator.clipboard.writeText("https://fundora.netlify.app/?ref=" + userWalletAddress)} className="referralButton source font-weight-bold flex self-center"><FaCopy size="1.6em" className="pr-3" />COPY LINK</h3>
+                                <h3 type="button mb-4" onClick={handleClickCopy} className="referralButton source font-weight-bold flex self-center cursor-pointer"><FaCopy size="1.6em" className="pr-3" />COPY LINK</h3>
                                 <small className="source text-lg">Earn 8% when someone uses your referral link.</small>
                             </Card>
                         </CardDeck>
@@ -1297,7 +1319,7 @@ function WealthMountain() {
                                 </Container>
                             </div>
                         </Parallax>
-                        
+
                         <Parallax strength={500} className='mt-4 lg:mt-8'>
                             <div className='calvino text-white text-3xl font-semibold px-4 pb-2 pt-4'>
                                 Features
@@ -1325,23 +1347,35 @@ function WealthMountain() {
                     </div>
                 </Container>
             </div>
-            
+
             <div className="text-center calvino text-lightblue">
                 <Card >
                     <p style={{ fontSize: '20px', color: 'white', paddingTop: '30px', fontWeight: 'bold' }}>© Fundora Team.  All Rights Reserved</p>
                     <CardDeck className="flex flex-row gap-16 justify-center items-end pb-8">
-                        <a href="https://testnet.bscscan.com/address/0x8e15CE05b65Bc0fAd8C010Dda0247b4c3e49acC9#code" target="_blank" rel="noreferrer"> 
-                            <img src={bscImg} width='32x' height='32x' alt='bsc'/>
+                        <a href="https://testnet.bscscan.com/address/0x62130076a24fa502D0029F29167341E5e7908e2d#code" target="_blank" rel="noreferrer">
+                            <img src={bscImg} width='32x' height='32x' alt='bsc' />
                         </a>
-                        <a href="https://twitter.com/" target="_blank" rel="noreferrer"> 
-                            <img src={twitterImg} width='32x' height='32x' alt='twitter'/>
+                        <a href="https://twitter.com/" target="_blank" rel="noreferrer">
+                            <img src={twitterImg} width='32x' height='32x' alt='twitter' />
                         </a>
-                        <a href="https://t.me/" target="_blank" rel="noreferrer"> 
-                            <img src={telegramImg} width='32x' height='32x' alt='telegram'/>
+                        <a href="https://t.me/" target="_blank" rel="noreferrer">
+                            <img src={telegramImg} width='32x' height='32x' alt='telegram' />
                         </a>
                     </CardDeck>
                 </Card>
             </div>
+
+            <ToastContainer
+                position='top-right'
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={true}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss={false}
+                draggable
+                pauseOnHover={false}
+            />
         </>
 
     )

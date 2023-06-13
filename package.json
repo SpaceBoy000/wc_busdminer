@@ -29,6 +29,7 @@
     "react-parallax": "^3.5.1",
     "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",
+    "react-toastify": "9.1.3",
     "react-typewriter-effect": "^1.1.0",
     "reactstrap": "^9.1.4",
     "reshake": "^1.2.4",
