@@ -10,7 +10,7 @@
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
-    "@walletconnect/web3-provider": "1.8.0",
+    "@walletconnect/web3-provider": "1.7.7",
     "abi-decoder": "^2.4.0",
     "aos": "^2.3.4",
     "apexcharts": "^3.36.0",
@@ -40,7 +40,7 @@
     "wagmi": "^0.6.4",
     "web-vitals": "^2.1.0",
     "web3": "^1.8.0",
-    "web3modal": "^1.9.12"
+    "web3modal": "1.9.7"
   },
   "scripts": {
     "start": "react-app-rewired start",

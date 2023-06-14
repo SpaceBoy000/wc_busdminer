@@ -16,7 +16,6 @@ function App() {
           <Route path='/binance' element={<BSC />} />
         </Routes>
       </Router>
-
     </>
   );
 }
