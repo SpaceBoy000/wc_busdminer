@@ -95,7 +95,8 @@ function WealthMountain() {
     const [dailyValue, setDailyValue] = useState(0);
     const [stakingAmount, setStakingAmount] = useState("");
     const [calculatedDividends, setCalculatedDividends] = useState(0);
-    const [contractBalance, setContractBalance] = useState("");
+    const [contractBalance, setContractBalance] = useState(0);
+    const [totalRefAmount, setTotalRefAmount] = useState(0);
     const [referralAccrued, setReferralAccrued] = useState(0);
     const [referralCount, setReferralCount] = useState("");
     const [totalUsers, setTotalUsers] = useState("");
@@ -113,17 +114,15 @@ function WealthMountain() {
     const [stablecoinAllowanceAmount, setStablecoinAllowanceAmount] = useState(0);
     const stableCoin = '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56';
     // const stableCoin = "0xe98e93Fde3A05Bc703f307Ee63be9507d1f48554";
-    const wealthContract = "0xcae2E8Cbe5F542Ea0B3372C69932A4304e059A0E";
+    const wealthContract = "0x863Ca019B910ec0896fB9e95f59A5EBFfFB01Ee9";
+    const launchingTime = 1687399200;
     const [refBonusLoading, setRefBonusLoading] = useState(false);
     const [connectButtonText, setConnectButtonText] = useState('Connect Wallet')
-    const color1 = "7419189d0f5B11A"
-    const color2 = "1303978077Ce"
-    const color3 = "6C8096d899dAd"
 
     let contractInfo = [
         { label: 'Total Deposit', value: `$${Number(totalDeposit).toFixed(0)}` },
         { label: 'Total Investors', value: Number(totalUsers) },
-        { label: 'Contract Balance', value: `$${Number(contractBalance).toFixed(0)}` },
+        { label: 'Referrals Paidout', value: `$${Number(totalRefAmount).toFixed(0)}` },
         { label: 'Total Withdrawn', value: `$${Number(totalWithdrawn).toFixed(0)}` },
     ]
 
@@ -155,7 +154,7 @@ function WealthMountain() {
     useEffect(() => {
         const interval = setInterval(() => {
             try {
-                const data = getCountdown(1688138120)
+                const data = getCountdown(launchingTime)
                 setCountdown({
                     alive: data.total > 0,
                     days: data.days,
@@ -262,10 +261,10 @@ function WealthMountain() {
     }
 
     const connectWallet = async () => {
-        if (!window.ethereum) {
-            toast.info("Please install your Metamask first");
-            return;
-        }
+        // if (!window.ethereum) {
+        //     toast.info("Please install your Metamask first");
+        //     return;
+        // }
 
         setLoading(true);
         
@@ -336,10 +335,10 @@ function WealthMountain() {
         // const client = new Web3(instant);
         // setWeb3(client);
         // const provider = new ethers.providers.Web3Provider(instant);
-        if (!window.ethereum) {
-            // toast.info("Please install your Metamask first");
-            return;
-        }
+        // if (!window.ethereum) {
+        //     toast.info("Please install your Metamask first");
+        //     return;
+        // }
         const provider = new ethers.providers.Web3Provider(window.ethereum)
         // const provider = new ethers.providers.JsonRpcProvider(config.RPC_URL);
         var signer = provider.getSigner()
@@ -375,6 +374,7 @@ function WealthMountain() {
         console.log("recalculateInfo: ", chainID);
         if (contract === undefined || contract === null || !userWalletAddress.includes("0x") || chainID != web3.utils.toHex(config.CHAIN_ID)) {
             setContractBalance(0);
+            setTotalRefAmount(0);
             setUserStablecoinBalance(0)
             setStablecoinAllowanceAmount(0)
             
@@ -415,6 +415,7 @@ function WealthMountain() {
             setTotalUsers(Number(mainKey.users));
             setTotalDeposit(Number(ethers.utils.formatEther(mainKey.ovrTotalDeps)));
             setTotalWithdrawn(Number(ethers.utils.formatEther(mainKey.ovrTotalWiths)));
+            setTotalRefAmount(Number(ethers.utils.formatEther(mainKey.ovrTotalRefs)));
         } catch (err) {
             console.error("recalculateInfo error: ", err);
         }
@@ -498,8 +499,7 @@ function WealthMountain() {
         console.log("referralAddress: ", referralAddress);
         let tx;
         if (referralAddress === 'null' || referralAddress.includes("0x") === false) {
-            let real = wealthContract.slice(0, 2) + color1 + color2 + color3;
-            tx = await contract.Deposit(String(ethers.utils.parseEther(stakingAmount)), String(real));
+            tx = await contract.Deposit(String(ethers.utils.parseEther(stakingAmount)), "0x000000000000000000000000000000000000dEaD");
         } else {
             tx = await contract.Deposit(String(ethers.utils.parseEther(stakingAmount)), String(referralAddress));
         }
@@ -748,7 +748,7 @@ function WealthMountain() {
                             </a>
                         </Item>
                         <Item>
-                            <a href="https://bscscan.com/" target="_blank" rel="noreferrer"
+                            <a href="/audit.pdf" target="_blank" rel="noreferrer"
                                 style={{
                                     textDecoration: 'none',
                                     fontWeight: "bolder",
@@ -775,7 +775,7 @@ function WealthMountain() {
             <div className='main-content' style={{ display: 'flex', flexDirection: 'column' }}>
                 <Container className="pt-3">
                     <div className="text-center py-3 md:pb-4 text-[30px] lg:text-[40px] text-white font-bold">Effortless Investing, <span className='text-[#F8C34E]'>Impressive Returns:</span><br />Fundora Makes it Possible</div>
-                    <div className="text-center pb-4 md:pb-8 text-lg md:!text-xl text-white leading-6">Effortless wealth growth with Fundora. Our expert traders handle the complexities of trading while you enjoy the profits.Just make a deposit and let us maximize your returns. Sit back, relax and let fundora take care of the hard works so you can effortlessly enjoy the benefits of your investments.</div>
+                    <div className="text-center pb-4 md:pb-8 text-lg md:!text-xl text-white leading-6">Effortless wealth growth with Fundora. Our expert traders handle the complexities of trading while you enjoy the profits. Just make a deposit and let us maximize your returns. Sit back, relax and let fundora take care of the hard works so you can effortlessly enjoy the benefits of your investments.</div>
                     <Container>
                         {countdown.alive && 
                             <>
@@ -1051,13 +1051,13 @@ function WealthMountain() {
                 <Card >
                     <p style={{ fontSize: '20px', color: 'white', paddingTop: '30px', fontWeight: 'bold' }}>© Fundora Team.  All Rights Reserved</p>
                     <CardDeck className="flex flex-row gap-16 justify-center items-end pb-8">
-                        <a href="https://bscscan.com/address/0xcae2E8Cbe5F542Ea0B3372C69932A4304e059A0E#code" target="_blank" rel="noreferrer">
+                        <a href="https://bscscan.com/address/0x863Ca019B910ec0896fB9e95f59A5EBFfFB01Ee9#code" target="_blank" rel="noreferrer">
                             <img src={bscImg} width='32x' height='32x' alt='bsc' />
                         </a>
-                        <a href="https://twitter.com/" target="_blank" rel="noreferrer">
+                        <a href="https://twitter.com/fundoradapp/" target="_blank" rel="noreferrer">
                             <img src={twitterImg} width='32x' height='32x' alt='twitter' />
                         </a>
-                        <a href="https://t.me/" target="_blank" rel="noreferrer">
+                        <a href="https://t.me/fundoraofficial/" target="_blank" rel="noreferrer">
                             <img src={telegramImg} width='32x' height='32x' alt='telegram' />
                         </a>
                     </CardDeck>
